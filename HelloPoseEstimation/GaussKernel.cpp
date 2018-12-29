@@ -75,11 +75,9 @@ tensorflow::Tensor GaussKernel::gauss_kernel(const size_t kernlen, const float n
 	//	out_filter = out_filter.reshape((kernlen, kernlen, 1, 1))
 	const Eigen::Index kernel_1d_size = kernel_1d.size();
 	Eigen::TensorMap<Eigen::Tensor<const float, 3>> gauss_kernel_2d(kernel_f.data(), { kernel_1d_size, kernel_1d_size, 1});
-	//Eigen::Tensor<const float, 3> gauss_kernel_filter = gauss_kernel;
-	//gauss_kernel_filter.resize(kernel_1d.size(), kernel_1d.size(), 19);
-
+	
 	// out_filter = np.repeat(out_filter, channels, axis = 2)
-	tensorflow::Tensor gauss_kernel(DT_FLOAT, tensorflow::TensorShape({kernel_1d_size, kernel_1d_size, channels, 1 }));
+	tensorflow::Tensor gauss_kernel = Tensor(DT_FLOAT, tensorflow::TensorShape({kernel_1d_size, kernel_1d_size, channels, 1 }));
 	repeat_channels_NHWC(gauss_kernel_2d, channels, gauss_kernel);
 
 	return gauss_kernel;
@@ -102,36 +100,3 @@ void GaussKernel::repeat_channels_NCHW(const Eigen::TensorMap<Eigen::Tensor<cons
 		memcpy(data, gauss_kernel_2d.data(), gauss_kernel_2d.size() * sizeof(float));
 	}
 }
-
-//tensorflow::Tensor && GaussKernel::gauss_kernel_tensor(const size_t kernlen, const float nsig, size_t channels) {
-//	// https://eigen.tuxfamily.org/dox/AsciiQuickReference.txt
-//	// interval = (2 * nsig + 1.) / (kernlen)
-//	const float interval = (2 * nsig + 1.) / (kernlen);
-//
-//	// x = np.linspace(-nsig - interval / 2., nsig + interval / 2., kernlen + 1)
-//	const Eigen::Tensor<double, 1> x = Eigen::VectorXd::LinSpaced(kernlen + 1, -nsig - interval / 2., nsig + interval / 2.);
-//
-//	// kern1d = np.diff(st.norm.cdf(x))
-//	const Eigen::VectorXd kernel_1d = diff(cdf(x));
-//	// -> same values as with numpy/scypi for first 11 digits
-//
-//	//	kernel_raw = np.sqrt(np.outer(kern1d, kern1d))
-//	const Eigen::MatrixXd kernel_raw = (kernel_1d * kernel_1d.transpose()).cwiseSqrt();
-//	// -> same values as with numpy/scypi
-//
-//	//	kernel = kernel_raw / kernel_raw.sum()
-//	const Eigen::MatrixXd kernel = kernel_raw / kernel_raw.sum();
-//	// -> same values as with numpy/scypi
-//
-//	//	out_filter = np.array(kernel, dtype = np.float32)
-//	const Eigen::MatrixXf kernel_f = kernel.cast<float>();
-//
-//
-//	kernel_f.resize()
-//		x.array().data()[0];
-//
-//	//	out_filter = out_filter.reshape((kernlen, kernlen, 1, 1))
-//	//	out_filter = np.repeat(out_filter, channels, axis = 2)
-//
-//	return Tensor();
-//}

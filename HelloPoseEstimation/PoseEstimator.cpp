@@ -18,13 +18,11 @@
 using namespace std;
 using namespace tensorflow;
 
-// TODO target size, up_scale for heat maps etc.
 PoseEstimator::PoseEstimator(char * const graph_file, int target_width, int target_height)
 	: graph_file(graph_file), session(nullptr)
 	, image_tensor(DT_FLOAT, TensorShape({ 1, target_height, target_width, 3 })) {
-	// create a "fake" cv::Mat from the tensor memory
-	float *p = image_tensor.flat<float>().data();
-	image_mat = new cv::Mat(target_height, target_width, CV_32FC3, p);
+	float *data = image_tensor.flat<float>().data();
+	image_mat = new cv::Mat(target_height, target_width, CV_32FC3, data);
 	resized = new cv::Mat(target_height, target_width, CV_8UC3);
 
 }
@@ -73,7 +71,8 @@ tensorflow::error::Code PoseEstimator::loadModel() {
 	return error::Code::OK;
 }
 
-// #define SPLIT_RUNS
+// Whether to run inference andpost processing in the same session or separate
+//( #define SPLIT_RUNS
 
 tensorflow::Status PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	Scope scope = Scope::NewRootScope();
@@ -83,38 +82,16 @@ tensorflow::Status PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 #else
 	auto Z = ops::Const(scope.WithOpName("z"), { { 0.f } });
 	auto node_from_other_graph = Input("Openpose/concat_stage7", 0, DT_FLOAT);
+	// TODO Resolve crash when slicing directly and remove the ops::Add(...) workaround (see unit tests)
 	auto inference_tensor_placeholder = ops::Add(scope.WithOpName("c"), Z, node_from_other_graph);
 #endif
-	// TODO Needs two runs in the same session
-
-	// Crashes badly,and usage islimited according to docs
-	//  auto inference_tensor_placeholder = ops::Placeholder(scope.WithOpName("inference_tensor"), DT_FLOAT, ops::Placeholder::Shape({ -1, -1, -1, 57 }));
-
-	// TODO inference and post-process in same session run by telling heat_mat and paf_mat to directly use Output tensor Openpose/concat_stage7:0
-	// TODO strings aren't accepted as input
-	// auto inference_tensor_placeholder = Input::Initializer("Openpose/concat_stage7:0");
-	// TODO need to add :0 but this causes INVALID_CHARACTER, and without the node reference is not unique
-	// -> because the placeholder tries to create a node with the same name as in the model -> how to reference it?
-	// auto inference_tensor_placeholder = ops::Placeholder(scope.WithOpName("Openpose/concat_stage7:0"), DT_FLOAT, ops::Placeholder::Shape({ -1, -1, -1, 57 }));
-	// TODO Looks like the way to go but aborts with code 3 when trying to add as input to heat_map
-	// auto inference_tensor_placeholder = Input("Openpose/concat_stage7",0, DT_FLOAT);
-	// TODO Aborts for existing name, so it's not specific to unknown node
-	// auto inference_tensor_placeholder = Input("Openpose/concat_stage7",0, DT_FLOAT);
-
-	// Not a node reference but hardcoded tensor values
-	// auto node = ops::AsNodeOut(scope, "Openpose/concat_stage7:0").node;
-	// Output test = ops::ResizeArea(scope.WithOpName("test"), node, upsample_size_placeholder);
-	//	auto inference_tensor_placeholder = Node({ "Openpose/concat_stage7:0" });
-
 	Output heat_mat = ops::Slice(scope.WithOpName("heat_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 0 }), Input::Initializer({ -1, -1, -1, 19 }));
 	Output paf_mat = ops::Slice(scope.WithOpName("paf_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 19 }), Input::Initializer({ -1, -1, -1, 38 }));
 
 	Output heat_mat_up = ops::ResizeArea(scope.WithOpName("heat_mat_up"), heat_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 	Output paf_mat_up = ops::ResizeArea(scope.WithOpName("paf_mat_up"), paf_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 
-
 	// smoother = Smoother({ 'data': self.tensor_heatMat_up }, 25, 3.0)
-	// TODO gauss_kernel is NCHW, but declared as NHWC -> filtering wrong
 	GaussKernel gauss_kernel(25, 3.0, 19);
 	//	gaussian_heatMat = smoother.get_output()
 	Output gaussian_heat_mat = ops::DepthwiseConv2dNative(scope.WithOpName("gaussian_heat_mat"), heat_mat_up, Input(gauss_kernel), gtl::ArraySlice<int>({ 1,1,1,1 }), "SAME");
@@ -129,17 +106,12 @@ tensorflow::Status PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	// Output tensor_peaks = tf.where(scope.WithOpName("tensor_peaks"), equal_values, gaussian_heat_mat, zeros_like_gaussian_heat_mat);
 	Output tensor_peaks_coords = ops::Where(scope.WithOpName("tensor_peaks_coords"), equal_values);
 
-
-	// TODO Name op (other than Slice:0)
-//	cout << heat_mat.name() << endl;
-//	cout << paf_mat.name() << endl;
-
 	return scope.ToGraphDef(&graph_def);
 }
 
 #include "opencv2/opencv.hpp"
 
-// TODO Specify target size here to achieve flexible runtime cpu usage -> separate targetSize & upsapleSize from estimator logic
+// TODO Specify target_size here to achieve flexible runtime cpu usage -> separate target_size & upsample_size from estimator logic
 tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int upsample_size, vector<Human>& humans) {
 	cv::resize(frame, *resized, resized->size());
 
@@ -157,7 +129,7 @@ tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int
 	// Why the additionalwarm-up calls for self.tensor_peaks, self.tensor_heatMat_up, self.tensor_pafMat_up with different upsample_sizes?
 	// - none, they can be commented out, they're noops
 
-	// THese are derived from output tensor, and the data type is set at runtime (tf.session.run)
+	// These are derived from output tensor, and the data type is set at runtime (tf.session.run)
 
 	// This is all to run the session
 	// Python has a global session object, but all ondes are imported under "TfPoseEstimator/*"
@@ -184,9 +156,6 @@ tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int
 			return fetch_tensor.code();
 		}
 
-		// TODO Need two session runs because post processing is built in different scope than model
-		// They're joined later on in the build process, but I've no clue yet
-		// how to access the placeholder reference "Openpose/concat_stage7:0" directly and use it as input for ops::Slice
 		Tensor& output = outputs_raw.at(0);
 		fetch_tensor = session->Run({
 			{"inference_tensor", output}, {"upsample_size", upsample_size_tensor}
@@ -223,9 +192,6 @@ tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int
 	cout << "  paf_mat \t dims=" << paf_mat.dims() << " size=" << paf_mat.dim_size(0) << "," << paf_mat.dim_size(1)<< "," << paf_mat.dim_size(2) << "," << paf_mat.dim_size(3) << endl;
 
 	estimate_paf(coords, peaks, heat_mat, paf_mat, humans);
-
-	// Without max pooling there are far too many peaks
-	//estimate_paf(peaks, heat_mat, paf_mat, humans);
 
 	return tensorflow::error::Code::OK;
 }
@@ -272,6 +238,7 @@ void PoseEstimator::imshow(const char* caption, cv::Mat& mat) {
 	cv::imshow(caption, mat);
 }
 
+// TODO Extract single or multiple layers from NHWC (channels are interleaved)
 void PoseEstimator::imshow(const char* caption, const size_t width, const size_t height, float * data) {
 	cv::Mat tensor_plane(height, width, CV_32FC1, data);
 	cv::Mat debug_output(height, width, CV_8UC1);
