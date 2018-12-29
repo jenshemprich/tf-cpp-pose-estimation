@@ -13,6 +13,10 @@
 
 #include "pafprocess.h"
 
+const float PafProcess::THRESH_HEAT = 0.05;
+const float PafProcess::THRESH_VECTOR_SCORE = 0.05;
+const float PafProcess::THRESH_HUMAN_SCORE = 0.4;
+
 #define PEAKS(i, j, k) peaks[k+p3*(j+p2*i)]
 #define HEAT(i, j, k) heatmap[k+h3*(j+h2*i)]
 #define PAF(i, j, k) pafmap[k+f3*(j+f2*i)]
@@ -20,16 +24,7 @@
 
 using namespace std;
 
-vector<vector<float>> subset;
-vector<Peak> peak_infos_line;
-
-int roundpaf(float v);
-vector<VectorXY> get_paf_vectors(const float *pafmap, const int ch_id1, const int ch_id2, const int f2, const int f3, const Peak& peak1, const Peak& peak2);
-bool comp_candidate(const ConnectionCandidate& a, const ConnectionCandidate& b);
-
-// TODO refactor into C++ class
-
-int process_paf(const int c1, const INT64 * coords, const int p1, const int p2, const int p3, const float *peaks, const int h1, const int h2, const int h3, const float *heatmap, const int f1, const int f2, const int f3, const float *pafmap) {
+int PafProcess::process(const int c1, const INT64 * coords, const int p1, const int p2, const int p3, const float *peaks, const int h1, const int h2, const int h3, const float *heatmap, const int f1, const int f2, const int f3, const float *pafmap) {
 	vector<Peak> peak_infos[NUM_PART];
 	gather_peak_infos(c1, coords, p1, p2, p3, peaks, h2, h3, heatmap, peak_infos);
 	gather_peak_infos_line(peak_infos);
@@ -48,7 +43,7 @@ int process_paf(const int c1, const INT64 * coords, const int p1, const int p2, 
 	return 0;
 }
 
-void gather_peak_infos(const int c1, const INT64 * coords, const int p1, const int p2, const int p3, const float * peaks, const int h2, const int h3, const float * heatmap, std::vector<Peak> peak_infos[18]) {
+void PafProcess::gather_peak_infos(const int c1, const INT64 * coords, const int p1, const int p2, const int p3, const float * peaks, const int h2, const int h3, const float * heatmap, std::vector<Peak> peak_infos[18]) {
 	int peak_cnt = 0;
 	for (int c = 0; c < c1; c++) {
 		const int x = COORDS(c, 2);
@@ -66,7 +61,7 @@ void gather_peak_infos(const int c1, const INT64 * coords, const int p1, const i
 	}
 }
 
-void gather_peak_infos_line(const std::vector<Peak> * peak_infos) {
+void PafProcess::gather_peak_infos_line(const std::vector<Peak> * peak_infos) {
 	peak_infos_line.clear();
 	for (int part_id = 0; part_id < NUM_PART; part_id++) {
 		for (int i = 0; i < (int)peak_infos[part_id].size(); i++) {
@@ -75,7 +70,7 @@ void gather_peak_infos_line(const std::vector<Peak> * peak_infos) {
 	}
 }
 
-void connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int f2, const int f3, const float * pafmap, std::vector<Connection> connection_all[19]) {
+void PafProcess::connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int f2, const int f3, const float * pafmap, std::vector<Connection> connection_all[19]) {
 	for (int pair_id = 0; pair_id < COCOPAIRS_SIZE; pair_id++) {
 		vector<ConnectionCandidate> candidates;
 		const vector<Peak>& peak_a_list = peak_infos[COCOPAIRS[pair_id][0]];
@@ -156,7 +151,7 @@ void connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int
 	}
 }
 
-void connect_subset(const std::vector<Connection> connection_all[19]) {
+void PafProcess::connect_subset(const std::vector<Connection> connection_all[19]) {
 	for (int pair_id = 0; pair_id < COCOPAIRS_SIZE; pair_id++) {
 		const vector<Connection>& conns = connection_all[pair_id];
 		const int part_id1 = COCOPAIRS[pair_id][0];
@@ -214,37 +209,37 @@ void connect_subset(const std::vector<Connection> connection_all[19]) {
 	}
 }
 
-void delete_some_rows() {
+void PafProcess::delete_some_rows() {
 	for (int i = subset.size() - 1; i >= 0; i--) {
 		if (subset[i][19] < THRESH_PART_CNT || subset[i][18] / subset[i][19] < THRESH_HUMAN_SCORE)
 			subset.erase(subset.begin() + i);
 	}
 }
 
-int get_num_humans() {
+int PafProcess::get_num_humans() {
     return subset.size();
 }
 
-int get_part_cid(int human_id, int part_id) {
+int PafProcess::get_part_cid(int human_id, int part_id) {
     return subset[human_id][part_id];
 }
 
-float get_score(int human_id) {
+float PafProcess::get_score(int human_id) {
     return subset[human_id][18] / subset[human_id][19];
 }
 
-int get_part_x(int cid) {
+int PafProcess::get_part_x(int cid) {
     return peak_infos_line[cid].x;
 }
-int get_part_y(int cid) {
+int PafProcess::get_part_y(int cid) {
     return peak_infos_line[cid].y;
 }
-float get_part_score(int cid) {
+float PafProcess::get_part_score(int cid) {
     return peak_infos_line[cid].score;
 }
 
-vector<VectorXY> get_paf_vectors(const float *pafmap, const int ch_id1, const int ch_id2, const int f2, const int f3, const Peak& peak1, const Peak& peak2) {
-    vector<VectorXY> paf_vectors;
+vector<PafProcess::VectorXY> PafProcess::get_paf_vectors(const float *pafmap, const int ch_id1, const int ch_id2, const int f2, const int f3, const Peak& peak1, const Peak& peak2) {
+    vector<PafProcess::VectorXY> paf_vectors;
 
     const float STEP_X = (peak2.x - peak1.x) / float(STEP_PAF);
     const float STEP_Y = (peak2.y - peak1.y) / float(STEP_PAF);
@@ -253,7 +248,7 @@ vector<VectorXY> get_paf_vectors(const float *pafmap, const int ch_id1, const in
         int location_x = roundpaf(peak1.x + i * STEP_X);
         int location_y = roundpaf(peak1.y + i * STEP_Y);
 
-        VectorXY v;
+		PafProcess::VectorXY v;
         v.x = PAF(location_y, location_x, ch_id1);
         v.y = PAF(location_y, location_x, ch_id2);
         paf_vectors.push_back(v);
@@ -262,10 +257,10 @@ vector<VectorXY> get_paf_vectors(const float *pafmap, const int ch_id1, const in
     return paf_vectors;
 }
 
-int roundpaf(const float v) {
+int PafProcess::roundpaf(const float v) {
     return (int) (v + 0.5);
 }
 
-bool comp_candidate(const ConnectionCandidate& a, const ConnectionCandidate& b) {
+bool PafProcess::comp_candidate(const PafProcess::ConnectionCandidate& a, const PafProcess::ConnectionCandidate& b) {
     return a.score > b.score;
 }

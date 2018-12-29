@@ -281,15 +281,10 @@ void PoseEstimator::imshow(const char* caption, const size_t width, const size_t
 }
 
 void PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat, vector<Human>& humans) {
-	// pafprocess.cpp runs over all peak planes and collets heatmap values into a Peak info vector
-	// -> there might be a chance to replace this with ops::Where but the risk of falure is hight at my current point of knowledge
-	// On the other hand, ops::Where collects the coordinates of the peaks, so we could just look up those in the heatmap to collect the vector<Peak>
-
-	process_paf(
+	paf.process(
 		coords.dim_size(0), coords.flat<INT64>().data(),
 		peaks.dim_size(1), peaks.dim_size(2), peaks.dim_size(3), peaks.flat<float>().data(),
 		heat_mat.dim_size(1), heat_mat.dim_size(2), heat_mat.dim_size(3), heat_mat.flat<float>().data(),
 		paf_mat.dim_size(1), paf_mat.dim_size(2), paf_mat.dim_size(3), paf_mat.flat<float>().data());
-
-	cout << "Number of humans = " << get_num_humans() << endl;
+	cout << "Number of humans = " << paf.get_num_humans() << endl;
 }

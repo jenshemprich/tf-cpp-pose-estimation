@@ -2,6 +2,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "pafprocess.h"
+
 class Human {
 };
 
@@ -26,5 +28,7 @@ private:
 	tensorflow::Tensor image_tensor;
 	cv::Mat* resized;
 	cv::Mat* image_mat;
+
+	PafProcess paf;
 };
 
