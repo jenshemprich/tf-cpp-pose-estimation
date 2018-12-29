@@ -48,9 +48,10 @@ void PafProcess::gather_peak_infos(const int c1, const INT64 * coords, const int
 	for (int c = 0; c < c1; c++) {
 		const int x = COORDS(c, 2);
 		const int y = COORDS(c, 1);
+		const int part_id = COORDS(c, 3);
 		// Ignore background layer (channel 18)
-		const int part_id = min((int) COORDS(c, 3), NUM_PART -1);
-		if (PEAKS(y, x, part_id) > THRESH_HEAT) {
+		const bool is_part_layer = part_id < NUM_PART;
+		if (is_part_layer && PEAKS(y, x, part_id) > THRESH_HEAT) {
 			Peak info;
 			info.id = peak_cnt++;
 			info.x = x;
