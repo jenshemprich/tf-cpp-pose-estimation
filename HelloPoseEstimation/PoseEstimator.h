@@ -18,8 +18,6 @@ public:
 	void imshow(const char* caption, cv::Mat& mat);
 	void imshow(const char* caption, const size_t height, const size_t width, float * d);
 	void estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat, std::vector<Human>& humans);
-	void estimate_paf( tensorflow::Tensor& peaks,  tensorflow::Tensor& heat_mat,  tensorflow::Tensor& paf_mat, std::vector<Human>& humans);
-
 private:
 	const char * const graph_file;
 	tensorflow::GraphDef graph_def;

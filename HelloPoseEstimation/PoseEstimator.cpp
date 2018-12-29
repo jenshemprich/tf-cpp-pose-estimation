@@ -293,12 +293,3 @@ void PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, cons
 
 	cout << "Number of humans = " << get_num_humans() << endl;
 }
-
-void PoseEstimator::estimate_paf(Tensor& peaks, Tensor& heat_mat, Tensor& paf_mat, vector<Human>& humans) {
-	process_paf(
-		peaks.dim_size(1), peaks.dim_size(2), peaks.dim_size(3), peaks.flat<float>().data(),
-		heat_mat.dim_size(1), heat_mat.dim_size(2), heat_mat.dim_size(3), heat_mat.flat<float>().data(),
-		paf_mat.dim_size(1), paf_mat.dim_size(2), paf_mat.dim_size(3), paf_mat.flat<float>().data());
-
-	cout << "Number of humans = " << get_num_humans() << endl;
-}
