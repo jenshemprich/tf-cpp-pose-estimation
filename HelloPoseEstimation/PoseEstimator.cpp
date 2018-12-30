@@ -71,10 +71,10 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 #ifdef SPLIT_RUNS
 	auto inference_tensor_placeholder = ops::Placeholder(scope.WithOpName("inference_tensor"), DT_FLOAT, ops::Placeholder::Shape({ -1, -1, -1, 57 }));
 #else
-	auto Z = ops::Const(scope.WithOpName("noop"), { { 0.f } });
+	auto noop = ops::Const(scope.WithOpName("noop"), { { 0.f } });
 	auto node_from_other_graph = Input("Openpose/concat_stage7", 0, DT_FLOAT);
 	// TODO Resolve crash when slicing directly and remove the ops::Add(...) workaround (see unit tests)
-	auto inference_tensor_placeholder = ops::Add(scope.WithOpName("workaround"), Z, node_from_other_graph);
+	auto inference_tensor_placeholder = ops::Add(scope.WithOpName("workaround"), noop, node_from_other_graph);
 #endif
 	Output heat_mat = ops::Slice(scope.WithOpName("heat_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 0 }), Input::Initializer({ -1, -1, -1, 19 }));
 	Output paf_mat = ops::Slice(scope.WithOpName("paf_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 19 }), Input::Initializer({ -1, -1, -1, 38 }));
@@ -164,38 +164,6 @@ std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsa
 	return estimate_paf(coords, peaks, heat_mat, paf_mat);
 }
 
-void PoseEstimator::draw_humans(cv::Mat& image, const vector<Human>& humans) const {
-
-	//def draw_humans(npimg, humans, imgcopy = False) :
-	//	if imgcopy :
-	//		npimg = np.copy(npimg)
-	//		image_h, image_w = npimg.shape[:2]
-	//		centers = {}
-	//		for human in humans :
-	//# draw point
-	//	for i in range(common.CocoPart.Background.value) :
-	//		if i not in human.body_parts.keys() :
-	//			continue
-
-	//			body_part = human.body_parts[i]
-	//			center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
-	//			centers[i] = center
-	//			cv2.circle(npimg, center, 3, common.CocoColors[i], thickness = 3, lineType = 8, shift = 0)
-
-	//			# draw line
-	//			for pair_order, pair in enumerate(common.CocoPairsRender) :
-	//				if pair[0] not in human.body_parts.keys() or pair[1] not in human.body_parts.keys() :
-	//					continue
-
-	//					# npimg = cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)
-	//					cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)
-
-	//					return npimg
-	std::for_each(humans.begin(), humans.end(), [&image](const Human& human) {
-		//for(human.body_parts
-	});
-}
-
 void PoseEstimator::imshow(const char * caption, tensorflow::Tensor & tensor, int channel) {
 	float* data = tensor.flat<float>().data();
 	imshow(caption, tensor.dim_size(2), tensor.dim_size(1), &data[0, 0, 0, channel]);
@@ -222,12 +190,6 @@ vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& pe
 		paf_mat.dim_size(1), paf_mat.dim_size(2), paf_mat.dim_size(3), paf_mat.flat<float>().data());
 	cout << "Number of humans = " << paf.get_num_humans() << endl;
 
-	// TODO Easy as pie...
-	vector<Human>&& humans = vector<Human>();
-
-	//def estimate_paf(peaks, heat_mat, paf_mat) :
-	//	pafprocess.process_paf(peaks, heat_mat, paf_mat)
-
 	//	humans = []
 	//	for human_id in range(pafprocess.get_num_humans()) :
 	//		human = Human([])
@@ -246,11 +208,92 @@ vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& pe
 	//					pafprocess.get_part_score(c_idx)
 	//				)
 
-	//				if is_added:
-	//					score = pafprocess.get_score(human_id)
-	//					human.score = score
-	//					humans.append(human)
+	//		if is_added:
+	//			score = pafprocess.get_score(human_id)
+	//			human.score = score
+	//			humans.append(human)
 
 	//	return humans
+
+	vector<Human> humans = vector<Human>();
+	const size_t n = paf.get_num_humans();
+	for(int human_id = 0; human_id < n; ++human_id) {
+		Human::BodyParts parts;
+		for (int part_index = 0; part_index < 18; ++part_index) {
+			const int c_idx = paf.get_part_cid(human_id, part_index);
+			if (c_idx < 0) {
+				continue; // body part not set
+			} else {
+				parts.insert(Human::BodyParts::value_type(
+					part_index,
+					BodyPart(
+						part_index, 
+						(float) paf.get_part_x(c_idx) / heat_mat.dim_size(2),
+						(float) paf.get_part_y(c_idx) / heat_mat.dim_size(1),
+						paf.get_part_score(c_idx))));
+			}
+		}
+
+		if (!parts.empty()) {
+			humans.push_back(Human(parts, paf.get_score(human_id)));
+		}
+	}
 	return humans;
+}
+
+BodyPart::BodyPart(int part_index, float x, float y, float score)
+	: part_index(part_index), x(x), y(y), score(score) {}
+
+Human::Human(const BodyParts & parts, const float score)
+	: parts(parts), score(score) {}
+
+void PoseEstimator::draw_humans(cv::Mat& image, const vector<Human>& humans) const {
+	//def draw_humans(npimg, humans, imgcopy = False) :
+	//	if imgcopy :
+	//		npimg = np.copy(npimg)
+	//	image_h, image_w = npimg.shape[:2]
+	//	centers = {}
+	//	for human in humans :
+	//		# draw point
+	//		for i in range(common.CocoPart.Background.value) :
+	//			if i not in human.body_parts.keys() :
+	//				continue
+	//			body_part = human.body_parts[i]
+	//			center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
+	//			centers[i] = center
+	//			cv2.circle(npimg, center, 3, common.CocoColors[i], thickness = 3, lineType = 8, shift = 0)
+	//		# draw line
+	//		for pair_order, pair in enumerate(common.CocoPairsRender) :
+	//			if pair[0] not in human.body_parts.keys() or pair[1] not in human.body_parts.keys() :
+	//				continue
+	//			cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)
+	//	return npimg
+
+	std::for_each(humans.begin(), humans.end(), [&image](const Human& human) {
+		vector<cv::Point> centers(PafProcess::COCOPAIRS_SIZE);
+		for (int i = 0; i < PafProcess::COCOPAIRS_SIZE; ++i) {
+			auto part = human.parts.find(i);
+			if (part != human.parts.end()) {
+				const BodyPart& body_part = part->second;
+				const cv::Point center = cv::Point(body_part.x * image.cols + 0.5, body_part.y * image.rows + 0.5);
+				centers[i] = center;
+				const int* coco_color = PafProcess::CocoColors[part->first];
+				const cv::Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);
+				cv::circle(image, center, 3, color, 3, 8, 0);
+			}
+		}
+
+		// CocoPairsRender = CocoPairs[:-2] -> coco pairs but the last two elements
+		for (int pair_order = 0; pair_order < PafProcess::COCOPAIRS_SIZE - 2; ++pair_order) {
+			const int* pair = PafProcess::COCOPAIRS[pair_order];
+			auto part_0 = human.parts.find(pair[0]);
+			auto part_1 = human.parts.find(pair[1]);
+
+			if (part_0 != human.parts.end() && part_1 != human.parts.end()) {
+				const int* coco_color = PafProcess::CocoColors[pair_order];
+				const cv::Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);
+				cv::line(image, centers[pair[0]], centers[pair[1]], color, 3);
+			}
+		}
+	});
 }

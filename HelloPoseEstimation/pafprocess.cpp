@@ -17,6 +17,21 @@ const float PafProcess::THRESH_HEAT = 0.05;
 const float PafProcess::THRESH_VECTOR_SCORE = 0.05;
 const float PafProcess::THRESH_HUMAN_SCORE = 0.4;
 
+const int PafProcess::COCOPAIRS_NET[COCOPAIRS_SIZE][2] = {
+	{12, 13}, {20, 21}, {14, 15}, {16, 17}, {22, 23}, {24, 25}, {0, 1}, {2, 3}, {4, 5},
+	{6, 7}, {8, 9}, {10, 11}, {28, 29}, {30, 31}, {34, 35}, {32, 33}, {36, 37}, {18, 19}, {26, 27}
+};
+
+const int PafProcess::COCOPAIRS[COCOPAIRS_SIZE][2] = {
+	{1, 2}, {1, 5}, {2, 3}, {3, 4}, {5, 6}, {6, 7}, {1, 8}, {8, 9}, {9, 10}, {1, 11},
+	{11, 12}, {12, 13}, {1, 0}, {0, 14}, {14, 16}, {0, 15}, {15, 17}, {2, 16}, {5, 17}
+};
+
+const int PafProcess::CocoColors[COCOPAIRS_SIZE][3] = { {255, 0, 0}, {255, 85, 0}, {255, 170, 0}, {255, 255, 0}, {170, 255, 0}, {85, 255, 0}, {0, 255, 0},
+{0, 255, 85}, {0, 255, 170}, {0, 255, 255}, {0, 170, 255}, {0, 85, 255}, {0, 0, 255}, {85, 0, 255},
+{170, 0, 255}, {255, 0, 255}, {255, 0, 170}, {255, 0, 85} };
+
+
 #define PEAKS(i, j, k) peaks[k+p3*(j+p2*i)]
 #define HEAT(i, j, k) heatmap[k+h3*(j+h2*i)]
 #define PAF(i, j, k) pafmap[k+f3*(j+f2*i)]

@@ -4,7 +4,22 @@
 
 #include "pafprocess.h"
 
-class Human {
+struct BodyPart {
+	BodyPart(int part_index, float x, float y, float score);
+
+	int part_index;
+	float x;
+	float y;
+	float score;
+};
+
+struct Human {
+	typedef std::map<int, BodyPart> BodyParts;
+	Human() : score(0.0) {};
+	Human(const BodyParts & parts, const float score);
+
+	const BodyParts parts;
+	const float score;
 };
 
 class PoseEstimator {
