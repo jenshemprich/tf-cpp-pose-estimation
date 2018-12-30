@@ -197,7 +197,9 @@ void PafProcess::connect_subset(const std::vector<Connection> connection_all[19]
 				}
 			} else if (found == 0 && pair_id < 17) {
 				vector<float> row(20);
-				for (int i = 0; i < 20; i++) row[i] = -1;
+				for (int i = 0; i < 20; i++) {
+					row[i] = -1;
+				}
 				row[part_id1] = conns[conn_id].cid1;
 				row[part_id2] = conns[conn_id].cid2;
 				row[19] = 2;

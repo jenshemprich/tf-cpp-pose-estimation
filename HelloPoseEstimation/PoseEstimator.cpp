@@ -32,28 +32,21 @@ PoseEstimator::~PoseEstimator() {
 	if (resized) delete resized;
 }
 
-tensorflow::error::Code PoseEstimator::loadModel() {
+void PoseEstimator::loadModel() {
 	cout << "Loading graph...\n";
 	Status load_graph_status = ReadBinaryProto(tensorflow::Env::Default(), graph_file, &graph_def);
 	if (!load_graph_status.ok()) {
-		cerr << load_graph_status;
-		return tensorflow::errors::NotFound("Failed to load compute graph from '", graph_file, "'").code();
+		throw tensorflow::errors::NotFound("Failed to load compute graph from '", graph_file, "'");
 	}
 
 	GraphDef postProcessing;
-	Status addPostProcessingStatus = addPostProcessing(postProcessing);
-	if (!addPostProcessingStatus.ok()) {
-		cout << addPostProcessingStatus.ToString() << "\n";
-		return addPostProcessingStatus.code();
-	}
-
+	addPostProcessing(postProcessing);
 	graph_def.MergeFrom(postProcessing);
 
 	cout << "Creating session...\n";
 	Status status = NewSession(tensorflow::SessionOptions(), &session);
 	if (!status.ok()) {
-		cout << status.ToString() << "\n";
-		return status.code();
+		throw status;
 	}
 
 	// Build static app example code (non-working with dll):
@@ -64,26 +57,24 @@ tensorflow::error::Code PoseEstimator::loadModel() {
 
 	Status session_create_status = session->Create(graph_def);
 	if (!session_create_status.ok()) {
-		cerr << session_create_status;
-		return session_create_status.code();
+		throw session_create_status;
 	}
 
-	return error::Code::OK;
 }
 
-// Whether to run inference andpost processing in the same session or separate
-//( #define SPLIT_RUNS
+// Whether to run inference and post-processing in the same or in separate sessions
+// #define SPLIT_RUNS
 
-tensorflow::Status PoseEstimator::addPostProcessing(GraphDef& graph_def) {
+void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	Scope scope = Scope::NewRootScope();
 	auto upsample_size_placeholder = ops::Placeholder(scope.WithOpName("upsample_size"), DT_INT32, ops::Placeholder::Shape({  }));
 #ifdef SPLIT_RUNS
 	auto inference_tensor_placeholder = ops::Placeholder(scope.WithOpName("inference_tensor"), DT_FLOAT, ops::Placeholder::Shape({ -1, -1, -1, 57 }));
 #else
-	auto Z = ops::Const(scope.WithOpName("z"), { { 0.f } });
+	auto Z = ops::Const(scope.WithOpName("noop"), { { 0.f } });
 	auto node_from_other_graph = Input("Openpose/concat_stage7", 0, DT_FLOAT);
 	// TODO Resolve crash when slicing directly and remove the ops::Add(...) workaround (see unit tests)
-	auto inference_tensor_placeholder = ops::Add(scope.WithOpName("c"), Z, node_from_other_graph);
+	auto inference_tensor_placeholder = ops::Add(scope.WithOpName("workaround"), Z, node_from_other_graph);
 #endif
 	Output heat_mat = ops::Slice(scope.WithOpName("heat_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 0 }), Input::Initializer({ -1, -1, -1, 19 }));
 	Output paf_mat = ops::Slice(scope.WithOpName("paf_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 19 }), Input::Initializer({ -1, -1, -1, 38 }));
@@ -97,43 +88,24 @@ tensorflow::Status PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	Output gaussian_heat_mat = ops::DepthwiseConv2dNative(scope.WithOpName("gaussian_heat_mat"), heat_mat_up, Input(gauss_kernel), gtl::ArraySlice<int>({ 1,1,1,1 }), "SAME");
 
 	// max_pooled_in_tensor = tf.nn.pool(gaussian_heatMat, window_shape = (3, 3), pooling_type = 'MAX', padding = 'SAME')
-	// self.tensor_peaks = tf.where(tf.equal(gaussian_heatMat, max_pooled_in_tensor), gaussian_heatMat, tf.zeros_like(gaussian_heatMat))
-	// TODO array strides are probably wrong
 	Output max_pooled_in_tensor = ops::MaxPool(scope.WithOpName("max_pooled_in_tensor"), gaussian_heat_mat, gtl::ArraySlice<int>({ 1,3,3,1 }), gtl::ArraySlice<int>({1,1,1,1}), "SAME");
+
+	// self.tensor_peaks = tf.where(tf.equal(gaussian_heatMat, max_pooled_in_tensor), gaussian_heatMat, tf.zeros_like(gaussian_heatMat))
 	Output equal_values = ops::Equal(scope.WithOpName("equal_values"), gaussian_heat_mat, max_pooled_in_tensor);
-	// Output zeros_like_gaussian_heat_mat = ops::ZerosLike(scope.WithOpName("zeros_like_gaussian_heat_mat"), gaussian_heat_mat);
-	// TODO tf.where uses equals as a mask for copying values from gaussian_heat_mat, whereas ops::Where returns coordinates instead
-	// Output tensor_peaks = tf.where(scope.WithOpName("tensor_peaks"), equal_values, gaussian_heat_mat, zeros_like_gaussian_heat_mat);
+	// tf_cc ops::Where output is a coordinate tensor
 	Output tensor_peaks_coords = ops::Where(scope.WithOpName("tensor_peaks_coords"), equal_values);
 
-	return scope.ToGraphDef(&graph_def);
+	tensorflow::Status status = scope.ToGraphDef(&graph_def);
+	if (!status.ok()) {
+		throw status;
+	}
 }
 
-#include "opencv2/opencv.hpp"
-
 // TODO Specify target_size here to achieve flexible runtime cpu usage -> separate target_size & upsample_size from estimator logic
-tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int upsample_size, vector<Human>& humans) {
+std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsample_size) {
 	cv::resize(frame, *resized, resized->size());
 
 	resized->convertTo(*image_mat, CV_32FC3);
-
-	// TODO image tensor is checked to be qint8 (qunatizized image) -> see about that later
-
-	// In python, the non-learning part can be defined via place holders and global functions
-	// -> tensor_peaks is defined via a lot of tf.* python functions
-	// when the session is run in python, the outputs re fed into the placeholders
-	// -> upsample_size becomes a feed input of tensor_peaks via the feed_dict, but is not an input of the neural network
-	// To build the final graph, in python it is necessary to call tf.variables_initializer
-	// -> tf.variables_initializer build the complete graph
-
-	// Why the additionalwarm-up calls for self.tensor_peaks, self.tensor_heatMat_up, self.tensor_pafMat_up with different upsample_sizes?
-	// - none, they can be commented out, they're noops
-
-	// These are derived from output tensor, and the data type is set at runtime (tf.session.run)
-
-	// This is all to run the session
-	// Python has a global session object, but all ondes are imported under "TfPoseEstimator/*"
-	// Here the session is local,with no prefix, therefore "TfPoseEstimator/" is ommited
 
 	const int upsample_height = image_tensor.dim_size(1) / 8 * upsample_size;
 	const int upsample_width = image_tensor.dim_size(2) / 8 * upsample_size;
@@ -152,8 +124,7 @@ tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int
 			&outputs_raw);
 
 		if (fetch_tensor.code() != error::Code::OK) {
-			cerr << fetch_tensor;
-			return fetch_tensor.code();
+			throw fetch_tensor;
 		}
 
 		Tensor& output = outputs_raw.at(0);
@@ -175,8 +146,7 @@ tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int
 #endif
 
 	if (fetch_tensor.code() != error::Code::OK) {
-		cerr << fetch_tensor;
-		return fetch_tensor.code();
+		throw fetch_tensor;
 	}
 
 	Tensor& coords = post_processing.at(0);
@@ -191,13 +161,10 @@ tensorflow::error::Code PoseEstimator::inference(const cv::Mat& frame, const int
 	cout << " heat_mat \t dims=" << heat_mat.dims()<< " size=" << heat_mat.dim_size(0) << "," << heat_mat.dim_size(1) <<","<< heat_mat.dim_size(2) << "," << heat_mat.dim_size(3) << endl;
 	cout << "  paf_mat \t dims=" << paf_mat.dims() << " size=" << paf_mat.dim_size(0) << "," << paf_mat.dim_size(1)<< "," << paf_mat.dim_size(2) << "," << paf_mat.dim_size(3) << endl;
 
-	estimate_paf(coords, peaks, heat_mat, paf_mat, humans);
-
-	return tensorflow::error::Code::OK;
+	return estimate_paf(coords, peaks, heat_mat, paf_mat);
 }
 
-void PoseEstimator::draw_humans(cv::Mat& image, const vector<Human> humans) const {
-	// TODO Create humans
+void PoseEstimator::draw_humans(cv::Mat& image, const vector<Human>& humans) const {
 
 	//def draw_humans(npimg, humans, imgcopy = False) :
 	//	if imgcopy :
@@ -247,11 +214,43 @@ void PoseEstimator::imshow(const char* caption, const size_t width, const size_t
 	cv::imshow(caption, debug_output);
 }
 
-void PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat, vector<Human>& humans) {
+vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat) {
 	paf.process(
 		coords.dim_size(0), coords.flat<INT64>().data(),
 		peaks.dim_size(1), peaks.dim_size(2), peaks.dim_size(3), peaks.flat<float>().data(),
 		heat_mat.dim_size(1), heat_mat.dim_size(2), heat_mat.dim_size(3), heat_mat.flat<float>().data(),
 		paf_mat.dim_size(1), paf_mat.dim_size(2), paf_mat.dim_size(3), paf_mat.flat<float>().data());
 	cout << "Number of humans = " << paf.get_num_humans() << endl;
+
+	// TODO Easy as pie...
+	vector<Human>&& humans = vector<Human>();
+
+	//def estimate_paf(peaks, heat_mat, paf_mat) :
+	//	pafprocess.process_paf(peaks, heat_mat, paf_mat)
+
+	//	humans = []
+	//	for human_id in range(pafprocess.get_num_humans()) :
+	//		human = Human([])
+	//		is_added = False
+
+	//		for part_idx in range(18) :
+	//			c_idx = int(pafprocess.get_part_cid(human_id, part_idx))
+	//			if c_idx < 0 :
+	//				continue
+
+	//				is_added = True
+	//				human.body_parts[part_idx] = BodyPart(
+	//					'%d-%d' % (human_id, part_idx), part_idx,
+	//					float(pafprocess.get_part_x(c_idx)) / heat_mat.shape[1],
+	//					float(pafprocess.get_part_y(c_idx)) / heat_mat.shape[0],
+	//					pafprocess.get_part_score(c_idx)
+	//				)
+
+	//				if is_added:
+	//					score = pafprocess.get_score(human_id)
+	//					human.score = score
+	//					humans.append(human)
+
+	//	return humans
+	return humans;
 }
