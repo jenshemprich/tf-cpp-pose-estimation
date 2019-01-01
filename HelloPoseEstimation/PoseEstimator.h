@@ -29,7 +29,7 @@ public:
 
 	void loadModel();
 	void addPostProcessing(tensorflow::GraphDef& graph_def);
-	std::vector<Human> inference(const cv::Mat& frame, const int upsample_size);
+	const std::vector<Human> inference(const cv::Mat& frame, const int upsample_size);
 	void draw_humans(cv::Mat& image, const std::vector<Human>& humans) const;
 	void imshow(const char * caption, tensorflow::Tensor & tensor, int channel);
 	void imshow(const char* caption, cv::Mat& mat);
@@ -43,7 +43,6 @@ private:
 	tensorflow::Tensor image_tensor;
 	cv::Mat* resized;
 	cv::Mat* image_mat;
-
 	PafProcess paf;
 };
 

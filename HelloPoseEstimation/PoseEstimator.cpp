@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#include <iostream>
-
 #include "tensorflow/core/platform/env.h"
 #include "Eigen/Dense"
 #include "tensorflow/core/public/session.h"
@@ -24,7 +22,6 @@ PoseEstimator::PoseEstimator(char * const graph_file, int target_width, int targ
 	float *data = image_tensor.flat<float>().data();
 	image_mat = new cv::Mat(target_height, target_width, CV_32FC3, data);
 	resized = new cv::Mat(target_height, target_width, CV_8UC3);
-
 }
 
 PoseEstimator::~PoseEstimator() {
@@ -33,7 +30,6 @@ PoseEstimator::~PoseEstimator() {
 }
 
 void PoseEstimator::loadModel() {
-	cout << "Loading graph...\n";
 	Status load_graph_status = ReadBinaryProto(tensorflow::Env::Default(), graph_file, &graph_def);
 	if (!load_graph_status.ok()) {
 		throw tensorflow::errors::NotFound("Failed to load compute graph from '", graph_file, "'");
@@ -43,7 +39,6 @@ void PoseEstimator::loadModel() {
 	addPostProcessing(postProcessing);
 	graph_def.MergeFrom(postProcessing);
 
-	cout << "Creating session...\n";
 	Status status = NewSession(tensorflow::SessionOptions(), &session);
 	if (!status.ok()) {
 		throw status;
@@ -59,7 +54,6 @@ void PoseEstimator::loadModel() {
 	if (!session_create_status.ok()) {
 		throw session_create_status;
 	}
-
 }
 
 // Whether to run inference and post-processing in the same or in separate sessions
@@ -82,17 +76,10 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	Output heat_mat_up = ops::ResizeArea(scope.WithOpName("heat_mat_up"), heat_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 	Output paf_mat_up = ops::ResizeArea(scope.WithOpName("paf_mat_up"), paf_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 
-	// smoother = Smoother({ 'data': self.tensor_heatMat_up }, 25, 3.0)
 	GaussKernel gauss_kernel(25, 3.0, 19);
-	//	gaussian_heatMat = smoother.get_output()
 	Output gaussian_heat_mat = ops::DepthwiseConv2dNative(scope.WithOpName("gaussian_heat_mat"), heat_mat_up, Input(gauss_kernel), gtl::ArraySlice<int>({ 1,1,1,1 }), "SAME");
-
-	// max_pooled_in_tensor = tf.nn.pool(gaussian_heatMat, window_shape = (3, 3), pooling_type = 'MAX', padding = 'SAME')
 	Output max_pooled_in_tensor = ops::MaxPool(scope.WithOpName("max_pooled_in_tensor"), gaussian_heat_mat, gtl::ArraySlice<int>({ 1,3,3,1 }), gtl::ArraySlice<int>({1,1,1,1}), "SAME");
-
-	// self.tensor_peaks = tf.where(tf.equal(gaussian_heatMat, max_pooled_in_tensor), gaussian_heatMat, tf.zeros_like(gaussian_heatMat))
 	Output equal_values = ops::Equal(scope.WithOpName("equal_values"), gaussian_heat_mat, max_pooled_in_tensor);
-	// tf_cc ops::Where output is a coordinate tensor
 	Output tensor_peaks_coords = ops::Where(scope.WithOpName("tensor_peaks_coords"), equal_values);
 
 	tensorflow::Status status = scope.ToGraphDef(&graph_def);
@@ -102,9 +89,9 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 }
 
 // TODO Specify target_size here to achieve flexible runtime cpu usage -> separate target_size & upsample_size from estimator logic
-std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsample_size) {
+const std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsample_size) {
 	cv::resize(frame, *resized, resized->size());
-
+	
 	resized->convertTo(*image_mat, CV_32FC3);
 
 	const int upsample_height = image_tensor.dim_size(1) / 8 * upsample_size;
@@ -154,13 +141,6 @@ std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsa
 	Tensor& heat_mat = post_processing.at(2);
 	Tensor& paf_mat = post_processing.at(3);
 
-	cout << "   coords \t dims=" << coords.dims() << " size=" << coords.dim_size(0) << "," << coords.dim_size(1) << endl;
-	const INT64* data = coords.flat<INT64>().data();
-	cout << "\t\t values[0]=" << data[0] << "," << data[1] << "," << data[2] << "," << data[3] << endl;
-	cout << "    peaks \t dims=" << peaks.dims() << " size=" << peaks.dim_size(0) << "," << peaks.dim_size(1) << "," << peaks.dim_size(2) << "," << peaks.dim_size(3) << endl;
-	cout << " heat_mat \t dims=" << heat_mat.dims()<< " size=" << heat_mat.dim_size(0) << "," << heat_mat.dim_size(1) <<","<< heat_mat.dim_size(2) << "," << heat_mat.dim_size(3) << endl;
-	cout << "  paf_mat \t dims=" << paf_mat.dims() << " size=" << paf_mat.dim_size(0) << "," << paf_mat.dim_size(1)<< "," << paf_mat.dim_size(2) << "," << paf_mat.dim_size(3) << endl;
-
 	return estimate_paf(coords, peaks, heat_mat, paf_mat);
 }
 
@@ -188,34 +168,8 @@ vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& pe
 		peaks.dim_size(1), peaks.dim_size(2), peaks.dim_size(3), peaks.flat<float>().data(),
 		heat_mat.dim_size(1), heat_mat.dim_size(2), heat_mat.dim_size(3), heat_mat.flat<float>().data(),
 		paf_mat.dim_size(1), paf_mat.dim_size(2), paf_mat.dim_size(3), paf_mat.flat<float>().data());
-	cout << "Number of humans = " << paf.get_num_humans() << endl;
 
-	//	humans = []
-	//	for human_id in range(pafprocess.get_num_humans()) :
-	//		human = Human([])
-	//		is_added = False
-
-	//		for part_idx in range(18) :
-	//			c_idx = int(pafprocess.get_part_cid(human_id, part_idx))
-	//			if c_idx < 0 :
-	//				continue
-
-	//				is_added = True
-	//				human.body_parts[part_idx] = BodyPart(
-	//					'%d-%d' % (human_id, part_idx), part_idx,
-	//					float(pafprocess.get_part_x(c_idx)) / heat_mat.shape[1],
-	//					float(pafprocess.get_part_y(c_idx)) / heat_mat.shape[0],
-	//					pafprocess.get_part_score(c_idx)
-	//				)
-
-	//		if is_added:
-	//			score = pafprocess.get_score(human_id)
-	//			human.score = score
-	//			humans.append(human)
-
-	//	return humans
-
-	vector<Human> humans = vector<Human>();
+	vector<Human> humans;
 	const size_t n = paf.get_num_humans();
 	for(int human_id = 0; human_id < n; ++human_id) {
 		Human::BodyParts parts;
@@ -228,8 +182,8 @@ vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& pe
 					part_index,
 					BodyPart(
 						part_index, 
-						(float) paf.get_part_x(c_idx) / heat_mat.dim_size(2),
-						(float) paf.get_part_y(c_idx) / heat_mat.dim_size(1),
+						static_cast<float>(paf.get_part_x(c_idx)) / heat_mat.dim_size(2),
+						static_cast<float>(paf.get_part_y(c_idx)) / heat_mat.dim_size(1),
 						paf.get_part_score(c_idx))));
 			}
 		}
@@ -248,36 +202,16 @@ Human::Human(const BodyParts & parts, const float score)
 	: parts(parts), score(score) {}
 
 void PoseEstimator::draw_humans(cv::Mat& image, const vector<Human>& humans) const {
-	//def draw_humans(npimg, humans, imgcopy = False) :
-	//	if imgcopy :
-	//		npimg = np.copy(npimg)
-	//	image_h, image_w = npimg.shape[:2]
-	//	centers = {}
-	//	for human in humans :
-	//		# draw point
-	//		for i in range(common.CocoPart.Background.value) :
-	//			if i not in human.body_parts.keys() :
-	//				continue
-	//			body_part = human.body_parts[i]
-	//			center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
-	//			centers[i] = center
-	//			cv2.circle(npimg, center, 3, common.CocoColors[i], thickness = 3, lineType = 8, shift = 0)
-	//		# draw line
-	//		for pair_order, pair in enumerate(common.CocoPairsRender) :
-	//			if pair[0] not in human.body_parts.keys() or pair[1] not in human.body_parts.keys() :
-	//				continue
-	//			cv2.line(npimg, centers[pair[0]], centers[pair[1]], common.CocoColors[pair_order], 3)
-	//	return npimg
-
 	std::for_each(humans.begin(), humans.end(), [&image](const Human& human) {
 		vector<cv::Point> centers(PafProcess::COCOPAIRS_SIZE);
+
 		for (int i = 0; i < PafProcess::COCOPAIRS_SIZE; ++i) {
 			auto part = human.parts.find(i);
 			if (part != human.parts.end()) {
 				const BodyPart& body_part = part->second;
 				const cv::Point center = cv::Point(body_part.x * image.cols + 0.5, body_part.y * image.rows + 0.5);
 				centers[i] = center;
-				const int* coco_color = PafProcess::CocoColors[part->first];
+				const int* coco_color = PafProcess::CocoColors[i];
 				const cv::Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);
 				cv::circle(image, center, 3, color, 3, 8, 0);
 			}
@@ -286,10 +220,8 @@ void PoseEstimator::draw_humans(cv::Mat& image, const vector<Human>& humans) con
 		// CocoPairsRender = CocoPairs[:-2] -> coco pairs but the last two elements
 		for (int pair_order = 0; pair_order < PafProcess::COCOPAIRS_SIZE - 2; ++pair_order) {
 			const int* pair = PafProcess::COCOPAIRS[pair_order];
-			auto part_0 = human.parts.find(pair[0]);
-			auto part_1 = human.parts.find(pair[1]);
-
-			if (part_0 != human.parts.end() && part_1 != human.parts.end()) {
+		
+			if (human.parts.find(pair[0]) != human.parts.end() && human.parts.find(pair[1]) != human.parts.end()) {
 				const int* coco_color = PafProcess::CocoColors[pair_order];
 				const cv::Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);
 				cv::line(image, centers[pair[0]], centers[pair[1]], color, 3);

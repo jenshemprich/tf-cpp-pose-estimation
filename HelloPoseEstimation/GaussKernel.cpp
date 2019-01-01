@@ -83,20 +83,20 @@ tensorflow::Tensor GaussKernel::gauss_kernel(const size_t kernlen, const float n
 	return gauss_kernel;
 }
 
-void GaussKernel::repeat_channels_NHWC(const Eigen::TensorMap<Eigen::Tensor<const float, 3>> &gauss_kernel_2d, const tensorflow::int64 channels, tensorflow::Tensor &gauss_kernel) {
-	const float* kernel_data = gauss_kernel_2d.data();
-	float* data = gauss_kernel.tensor<float, 4>().data();
-	for (int j = 0; j < gauss_kernel_2d.size(); ++j) {
+void GaussKernel::repeat_channels_NHWC(const Eigen::TensorMap<Eigen::Tensor<const float, 3>> &kernel_2d, const tensorflow::int64 channels, tensorflow::Tensor &tensor) {
+	const float* kernel_data = kernel_2d.data();
+	float* tensor_data = tensor.tensor<float, 4>().data();
+	for (int j = 0; j < kernel_2d.size(); ++j) {
 		for (int i = 0; i < channels; ++i) {
-			*(data++) = gauss_kernel_2d.data()[j];
+			*(tensor_data++) = kernel_data[j];
 		}
 	}
 }
 
-void GaussKernel::repeat_channels_NCHW(const Eigen::TensorMap<Eigen::Tensor<const float, 3>> &gauss_kernel_2d, const tensorflow::int64 channels, tensorflow::Tensor &gauss_kernel) {
-	auto eigen_tensor = gauss_kernel.tensor<float, 4>();
+void GaussKernel::repeat_channels_NCHW(const Eigen::TensorMap<Eigen::Tensor<const float, 3>> &kernel_2d, const tensorflow::int64 channels, tensorflow::Tensor &tensor) {
+	const float* kernel_data = kernel_2d.data();
+	auto tensor_data = tensor.tensor<float, 4>().data();
 	for (int i = 0; i < channels; ++i) {
-		float* data = &eigen_tensor.data()[gauss_kernel_2d.size() * i];
-		memcpy(data, gauss_kernel_2d.data(), gauss_kernel_2d.size() * sizeof(float));
+		memcpy(&tensor_data[kernel_2d.size() * i], kernel_data, kernel_2d.size() * sizeof(float));
 	}
 }
