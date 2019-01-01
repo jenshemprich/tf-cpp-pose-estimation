@@ -58,7 +58,7 @@ int PafProcess::process(const int c1, const INT64 * coords, const int p1, const 
 	return 0;
 }
 
-void PafProcess::gather_peak_infos(const int c1, const INT64 * coords, const int p1, const int p2, const int p3, const float * peaks, const int h2, const int h3, const float * heatmap, std::vector<Peak> peak_infos[18]) {
+void PafProcess::gather_peak_infos(const int c1, const INT64* coords, const int p1, const int p2, const int p3, const float* peaks, const int h2, const int h3, const float* heatmap, std::vector<Peak> peak_infos[18]) {
 	int peak_cnt = 0;
 	for (int c = 0; c < c1; c++) {
 		const int x = COORDS(c, 2);
@@ -77,16 +77,17 @@ void PafProcess::gather_peak_infos(const int c1, const INT64 * coords, const int
 	}
 }
 
-void PafProcess::gather_peak_infos_line(const std::vector<Peak> * peak_infos) {
+void PafProcess::gather_peak_infos_line(const std::vector<Peak> peak_infos[18]) {
 	peak_infos_line.clear();
 	for (int part_id = 0; part_id < NUM_PART; part_id++) {
 		for (int i = 0; i < (int)peak_infos[part_id].size(); i++) {
 			peak_infos_line.push_back(peak_infos[part_id][i]);
 		}
 	}
+	sort(peak_infos_line.begin(), peak_infos_line.end(), comp_peak_id_ascending);
 }
 
-void PafProcess::connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int f2, const int f3, const float * pafmap, std::vector<Connection> connection_all[19]) {
+void PafProcess::connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int f2, const int f3, const float* pafmap, std::vector<Connection> connection_all[19]) {
 	for (int pair_id = 0; pair_id < COCOPAIRS_SIZE; pair_id++) {
 		vector<ConnectionCandidate> candidates;
 		const vector<Peak>& peak_a_list = peak_infos[COCOPAIRS[pair_id][0]];
@@ -136,7 +137,7 @@ void PafProcess::connect_all(const std::vector<Peak> peak_infos[18], const int h
 		}
 
 		vector<Connection>& conns = connection_all[pair_id];
-		sort(candidates.begin(), candidates.end(), comp_candidate);
+		sort(candidates.begin(), candidates.end(), comp_candidate_score_descending);
 		for (int c_id = 0; c_id < (int)candidates.size(); c_id++) {
 			const ConnectionCandidate& candidate = candidates[c_id];
 			bool assigned = false;
@@ -279,6 +280,10 @@ int PafProcess::roundpaf(const float v) {
     return (int) (v + 0.5);
 }
 
-bool PafProcess::comp_candidate(const PafProcess::ConnectionCandidate& a, const PafProcess::ConnectionCandidate& b) {
+bool PafProcess::comp_candidate_score_descending(const PafProcess::ConnectionCandidate& a, const PafProcess::ConnectionCandidate& b) {
     return a.score > b.score;
+}
+
+bool PafProcess::comp_peak_id_ascending(const PafProcess::Peak& a, const PafProcess::Peak& b) {
+	return a.id < b.id;
 }

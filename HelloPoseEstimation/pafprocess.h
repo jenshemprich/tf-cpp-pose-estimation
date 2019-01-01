@@ -47,18 +47,20 @@ public:
 		int peak_id2;
 	};
 
-	int process(const int c1, const INT64 * coords, const int p1, const int p2, const int p3, const float *peaks, const int h1, const int h2, const int h3, const float *heatmap, const int f1, const int f2, const int f3, const float *pafmap);
+	int process(const int c1, const INT64* coords, const int p1, const int p2, const int p3, const float* peaks, const int h1, const int h2, const int h3, const float* heatmap, const int f1, const int f2, const int f3, const float* pafmap);
 
 private:
-	void gather_peak_infos(const int c, const INT64 * coords, const int p1, const int p2, const int p3, const float * peaks, const  int h2, const int h3, const float * heatmap, std::vector<Peak> peak_infos[18]);
-	void gather_peak_infos_line(const std::vector<Peak> * peak_infos);
-	void connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int f2, const int f3, const float * pafmap, std::vector<Connection> connection_all[19]);
+	void gather_peak_infos(const int c, const INT64* coords, const int p1, const int p2, const int p3, const float* peaks, const  int h2, const int h3, const float* heatmap, std::vector<Peak> peak_infos[18]);
+	void gather_peak_infos_line(const std::vector<Peak> peak_infos[18]);
+	void connect_all(const std::vector<Peak> peak_infos[18], const int h1, const int f2, const int f3, const float* pafmap, std::vector<Connection> connection_all[19]);
 	void connect_subset(const std::vector<Connection> connection_all[19]);
 	void delete_some_rows();
 
-	std::vector<PafProcess::VectorXY> get_paf_vectors(const float *pafmap, const int ch_id1, const int ch_id2, const int f2, const int f3, const Peak& peak1, const Peak& peak2);
+	std::vector<PafProcess::VectorXY> get_paf_vectors(const float* pafmap, const int ch_id1, const int ch_id2, const int f2, const int f3, const Peak& peak1, const Peak& peak2);
 	static int roundpaf(float v);
-	static bool comp_candidate(const PafProcess::ConnectionCandidate& a, const PafProcess::ConnectionCandidate& b);
+	static bool comp_candidate_score_descending(const PafProcess::ConnectionCandidate& a, const PafProcess::ConnectionCandidate& b);
+	static bool comp_peak_id_ascending(const PafProcess::Peak& a, const PafProcess::Peak& b);
+
 
 	std::vector<std::vector<float>> subset;
 	std::vector<PafProcess::Peak> peak_infos_line;
