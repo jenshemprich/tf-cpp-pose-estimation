@@ -30,6 +30,9 @@
     <ClInclude Include="GaussKernel.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="FramesPerSecond.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -45,6 +48,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="GaussKernel.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="FramesPerSecond.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
