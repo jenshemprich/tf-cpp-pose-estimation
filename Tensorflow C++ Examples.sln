@@ -5,17 +5,18 @@ VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloTensorflow", "HelloTensorflow\HelloTensorflow.vcxproj", "{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloPoseEstimation", "HelloPoseEstimation\HelloPoseEstimation.vcxproj", "{71655064-43AD-40B1-9756-74EEA6C2E6EA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PoseEstimation", "PoseEstimation\PoseEstimation.vcxproj", "{71655064-43AD-40B1-9756-74EEA6C2E6EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloTensorFlowTests", "HelloTensorFlowTests\HelloTensorFlowTests.vcxproj", "{3D84CCE1-D54E-46AA-839C-935CC427EB99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloPoseEstimationTests", "HelloPoseEstimationTests\HelloPoseEstimationTests.vcxproj", "{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PoseEstimationTests", "PoseEstimationTests\PoseEstimationTests.vcxproj", "{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 		Release-avx2|x64 = Release-avx2|x64
+		Release-avx2-fma|x64 = Release-avx2-fma|x64
 		Release-cuda|x64 = Release-cuda|x64
 		Release-cuda-avx2|x64 = Release-cuda-avx2|x64
 	EndGlobalSection
@@ -26,6 +27,8 @@ Global
 		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release|x64.Build.0 = Release|x64
 		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-avx2|x64.ActiveCfg = Release-avx2|x64
 		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-avx2|x64.Build.0 = Release-avx2|x64
+		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
+		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
 		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{FF1ECE54-D9BC-4A24-86CA-DD63416D2515}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
@@ -36,6 +39,8 @@ Global
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release|x64.Build.0 = Release|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2|x64.ActiveCfg = Release-avx2|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2|x64.Build.0 = Release-avx2|x64
+		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
+		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
@@ -46,6 +51,8 @@ Global
 		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release|x64.Build.0 = Release|x64
 		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-avx2|x64.ActiveCfg = Release-avx2|x64
 		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-avx2|x64.Build.0 = Release-avx2|x64
+		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
+		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
 		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{3D84CCE1-D54E-46AA-839C-935CC427EB99}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
@@ -56,6 +63,8 @@ Global
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release|x64.Build.0 = Release|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2|x64.ActiveCfg = Release-avx2|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2|x64.Build.0 = Release-avx2|x64
+		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
+		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
