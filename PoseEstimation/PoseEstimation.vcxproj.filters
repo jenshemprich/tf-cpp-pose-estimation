@@ -21,9 +21,6 @@
     <ClInclude Include="PoseEstimator.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="HelloPoseEstimation.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="pafprocess.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -33,12 +30,12 @@
     <ClInclude Include="FramesPerSecond.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="PoseEstimation.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="HelloPoseEstimation.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="PoseEstimator.cpp">
@@ -51,6 +48,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="FramesPerSecond.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="PoseEstimation.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

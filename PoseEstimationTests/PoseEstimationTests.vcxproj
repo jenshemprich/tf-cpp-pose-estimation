@@ -37,13 +37,10 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="Shared" />
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\lib\Deep Learning and Computer Vision libraries.props" />
   </ImportGroup>
+  <ImportGroup Label="Shared" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClInclude Include="pch.h" />

@@ -36,37 +36,21 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\..\lib\Deep Learning and Computer Vision libraries.props" />
+  </ImportGroup>
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-cuda|x64'" Label="PropertySheets">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-avx2|x64'" Label="PropertySheets">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-avx2-fma|x64'" Label="PropertySheets">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-cuda-avx2|x64'" Label="PropertySheets">
-    <Import Project="..\..\lib\Debugger Environment.props" />
-    <Import Project="..\..\lib\Lib Folder Location.props" />
-    <Import Project="..\..\lib\TensorFlow.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
@@ -98,6 +82,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
+    <Import Project="..\..\lib\Deep Learning and Computer Vision libraries.targets" />
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
