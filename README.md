@@ -1,21 +1,18 @@
 # TensorFlow C++ Examples
-This project contains some c++ example for TensorFlow.
+This project contains some c++ examples for TensorFlow.
 
 ## Preparation
-First you need to build tensoflow for Window. For build instructions for AVX/AVX2/CUDA versions of TF see https://github.com/jenshemprich/lib/
+This project references the msbuild targets of the lib project at https://github.com/jenshemprich/lib. Clone the lib repository to the same folder as this project.
 
-### Build tf-cpp-examples
-The project references the msbuild targets of the lib project at https://github.com/jenshemprich/lib. Clone the lib repository to the same folder as this project.
+Then follow the build instructioons to generate AVX/AVX2/CUDA versions of the Tensorflow library for Windows. 
 
 ## HelloTensorflow
-A hello-world ewxample copied from https://joe-antognini.github.io/machine-learning/windows-tf-project.
+A hello-world example copied from https://joe-antognini.github.io/machine-learning/windows-tf-project.
 
 ## Pose estimation
-
-Implementation of pose estimation in pure C++. It's a port of https://github.com/ildoonet/tf-pose-estimation/ which is in turn derived from https://github.com/CMU-Perceptual-Computing-Lab/openpose.
+An implementation of pose estimation in pure C++. It's a port of https://github.com/ildoonet/tf-pose-estimation/ which in turn is derived from https://github.com/CMU-Perceptual-Computing-Lab/openpose.
 
 An in-depth article about the algorithm can be found here: https://arvrjourney.com/human-pose-estimation-using-openpose-with-tensorflow-part-2-e78ab9104fc8
-
 
 With that knowledge, you can easily follow the code in PoseEstimator.cpp. It's a three step proces consisting of:
 1. Inference to retrieve heat maps and part affinity fields.
