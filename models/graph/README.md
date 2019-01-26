@@ -1,0 +1,2 @@
+# Download the models
+Download existing models (mobilenet_thin, cmu) from[tf-pose-estimation](https://github.com/ildoonet/tf-pose-estimation/tree/master/models/graph), follow the instructions there to download them and place them here.
