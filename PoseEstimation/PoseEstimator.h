@@ -24,7 +24,7 @@ struct Human {
 
 class PoseEstimator {
 public:
-	PoseEstimator(char* const graph_file, int target_width, int target_height);
+	PoseEstimator(char* const graph_file, const cv::Size& image);
 	~PoseEstimator();
 
 	void loadModel();

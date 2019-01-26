@@ -16,12 +16,12 @@
 using namespace std;
 using namespace tensorflow;
 
-PoseEstimator::PoseEstimator(char * const graph_file, int target_width, int target_height)
+PoseEstimator::PoseEstimator(char * const graph_file, const cv::Size& image)
 	: graph_file(graph_file), session(nullptr)
-	, image_tensor(DT_FLOAT, TensorShape({ 1, target_height, target_width, 3 })) {
+	, image_tensor(DT_FLOAT, TensorShape({ 1, image.height, image.width, 3 })) {
+	resized = new cv::Mat(image, CV_8UC3);
 	float *data = image_tensor.flat<float>().data();
-	image_mat = new cv::Mat(target_height, target_width, CV_32FC3, data);
-	resized = new cv::Mat(target_height, target_width, CV_8UC3);
+	image_mat = new cv::Mat(image, CV_32FC3, data);
 }
 
 PoseEstimator::~PoseEstimator() {
