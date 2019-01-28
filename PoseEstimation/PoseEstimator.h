@@ -28,7 +28,8 @@ public:
 	~PoseEstimator();
 
 	void loadModel();
-	void addPostProcessing(tensorflow::GraphDef& graph_def);
+	void addPostProcessing(tensorflow::Scope& scope, tensorflow::GraphDef& graph_def);
+	void setGaussKernelSize(const size_t size);
 	const std::vector<Human> inference(const cv::Mat& frame, const int upsample_size);
 	void draw_humans(cv::Mat& image, const std::vector<Human>& humans) const;
 	void imshow(const char * caption, tensorflow::Tensor & tensor, int channel);
@@ -37,6 +38,8 @@ public:
 	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat);
 private:
 	const char * const graph_file;
+	const cv::Size inference_mat_default_size;
+
 	tensorflow::GraphDef graph_def;
 	tensorflow::Session* session;
 
