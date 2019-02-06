@@ -37,7 +37,6 @@ public:
 	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat);
 private:
 	const char * const graph_file;
-	tensorflow::GraphDef graph_def;
 	tensorflow::Session* session;
 
 	tensorflow::Tensor image_tensor;

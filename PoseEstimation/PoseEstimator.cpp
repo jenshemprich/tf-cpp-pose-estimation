@@ -30,6 +30,7 @@ PoseEstimator::~PoseEstimator() {
 }
 
 void PoseEstimator::loadModel() {
+	tensorflow::GraphDef graph_def;
 	Status load_graph_status = ReadBinaryProto(tensorflow::Env::Default(), graph_file, &graph_def);
 	if (!load_graph_status.ok()) {
 		throw tensorflow::errors::NotFound("Failed to load compute graph from '", graph_file, "'");
@@ -91,7 +92,7 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 // TODO Specify target_size here to achieve flexible runtime cpu usage -> separate target_size & upsample_size from estimator logic
 const std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsample_size) {
 	cv::resize(frame, *resized, resized->size());
-	
+
 	resized->convertTo(*image_mat, CV_32FC3);
 
 	const int upsample_height = image_tensor.dim_size(1) / 8 * upsample_size;
