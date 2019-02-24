@@ -33,6 +33,9 @@
     <ClInclude Include="PoseEstimation.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="TensorMat.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -51,6 +54,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="PoseEstimation.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="TensorMat.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

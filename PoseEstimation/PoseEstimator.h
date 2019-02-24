@@ -2,6 +2,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include "TensorMat.h"
 #include "pafprocess.h"
 
 struct BodyPart {
@@ -24,12 +25,13 @@ struct Human {
 
 class PoseEstimator {
 public:
-	PoseEstimator(char* const graph_file, const cv::Size& image);
+	PoseEstimator(char* const graph_file);
 	~PoseEstimator();
 
 	void loadModel();
 	void addPostProcessing(tensorflow::GraphDef& graph_def);
-	const std::vector<Human> inference(const cv::Mat& frame, const int upsample_size);
+	const std::vector<Human> inference(const TensorMat& input, const int upsample_size);
+	const std::vector<Human> inference(const tensorflow::Tensor& input, const int upsample_size);
 	void draw_humans(cv::Mat& image, const std::vector<Human>& humans) const;
 	void imshow(const char * caption, tensorflow::Tensor & tensor, int channel);
 	void imshow(const char* caption, cv::Mat& mat);
@@ -38,10 +40,6 @@ public:
 private:
 	const char * const graph_file;
 	tensorflow::Session* session;
-
-	tensorflow::Tensor image_tensor;
-	cv::Mat* resized;
-	cv::Mat* image_mat;
 	PafProcess paf;
 };
 

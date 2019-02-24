@@ -256,6 +256,7 @@
     <ClInclude Include="pafprocess.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PoseEstimator.h" />
+    <ClInclude Include="TensorMat.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FramesPerSecond.cpp" />
@@ -271,6 +272,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PoseEstimator.cpp" />
+    <ClCompile Include="TensorMat.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

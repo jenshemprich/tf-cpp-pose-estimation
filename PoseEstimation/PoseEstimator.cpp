@@ -16,17 +16,10 @@
 using namespace std;
 using namespace tensorflow;
 
-PoseEstimator::PoseEstimator(char * const graph_file, const cv::Size& image)
-	: graph_file(graph_file), session(nullptr)
-	, image_tensor(DT_FLOAT, TensorShape({ 1, image.height, image.width, 3 })) {
-	resized = new cv::Mat(image, CV_8UC3);
-	float *data = image_tensor.flat<float>().data();
-	image_mat = new cv::Mat(image, CV_32FC3, data);
-}
+PoseEstimator::PoseEstimator(char * const graph_file)
+	: graph_file(graph_file), session(nullptr) {}
 
 PoseEstimator::~PoseEstimator() {
-	if (image_mat) delete image_mat;
-	if (resized) delete resized;
 }
 
 void PoseEstimator::loadModel() {
@@ -89,14 +82,13 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	}
 }
 
-// TODO Specify target_size here to achieve flexible runtime cpu usage -> separate target_size & upsample_size from estimator logic
-const std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const int upsample_size) {
-	cv::resize(frame, *resized, resized->size());
+const std::vector<Human> PoseEstimator::inference(const TensorMat & input, const int upsample_size) {
+	return inference(input.tensor, upsample_size);
+}
 
-	resized->convertTo(*image_mat, CV_32FC3);
-
-	const int upsample_height = image_tensor.dim_size(1) / 8 * upsample_size;
-	const int upsample_width = image_tensor.dim_size(2) / 8 * upsample_size;
+const std::vector<Human> PoseEstimator::inference(const tensorflow::Tensor & input, const int upsample_size) {
+	const int upsample_height = input.dim_size(1) / 8 * upsample_size;
+	const int upsample_width = input.dim_size(2) / 8 * upsample_size;
 	const tensorflow::Tensor upsample_size_tensor = tensorflow::Input::Initializer( {upsample_height, upsample_width} ).tensor;
 
 	Status fetch_tensor;
@@ -104,7 +96,7 @@ const std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const in
 #ifdef SPLIT_RUNS
 		std::vector<Tensor> outputs_raw;
 		fetch_tensor = session->Run({
-				{"image:0", image_tensor}
+				{"image:0", input}
 			}, {
 				"Openpose/concat_stage7:0"
 			}, {
@@ -125,7 +117,7 @@ const std::vector<Human> PoseEstimator::inference(const cv::Mat& frame, const in
 			&post_processing);
 #else
 		fetch_tensor = session->Run({
-				{"image:0", image_tensor}, {"upsample_size", upsample_size_tensor}
+				{"image:0", input}, {"upsample_size", upsample_size_tensor}
 			}, {
 				"tensor_peaks_coords", "gaussian_heat_mat", "heat_mat_up", "paf_mat_up"
 			}, {
