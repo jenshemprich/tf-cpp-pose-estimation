@@ -29,7 +29,8 @@ public:
 	~PoseEstimator();
 
 	void loadModel();
-	void addPostProcessing(tensorflow::GraphDef& graph_def);
+	void addPostProcessing(tensorflow::Scope& scope, tensorflow::GraphDef& graph_def);
+	void setGaussKernelSize(const size_t size);
 	const std::vector<Human> inference(const TensorMat& input, const int upsample_size);
 	const std::vector<Human> inference(const tensorflow::Tensor& input, const int upsample_size);
 	void draw_humans(cv::Mat& image, const std::vector<Human>& humans) const;

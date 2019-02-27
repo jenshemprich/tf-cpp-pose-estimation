@@ -95,3 +95,43 @@ TEST(TestSessionRun, RankEasy) {
 
 	session->Close();
 }
+
+TEST(TestSessionRun, AssignPartialShapeToVariable) {
+	Scope scope = Scope::NewRootScope();
+
+	PartialTensorShape partialTensorShape = PartialTensorShape({ -1, -1, 19, 1 });
+	auto variable = ops::Variable(scope.WithOpName("variable"), PartialTensorShape(), DT_FLOAT);
+	auto placeholder = ops::Placeholder(scope.WithOpName("input"), DT_FLOAT, ops::Placeholder::Shape(partialTensorShape));
+	auto assign = ops::Assign(scope.WithOpName("assign"), variable, Input(placeholder), ops::Assign::ValidateShape(false));
+
+	GraphDef graph_def;
+	EXPECT_TRUE(scope.ToGraphDef(&graph_def).ok());
+
+	tensorflow::Session* session;
+	EXPECT_TRUE(NewSession(tensorflow::SessionOptions(), &session).ok());
+	EXPECT_TRUE(session->Create(graph_def).ok());
+
+	Tensor tensor = Tensor(DT_FLOAT, TensorShape({ 25, 25, 19, 1 }));
+	Status init_variables;
+	std::vector<Tensor> output;
+	EXPECT_TRUE(session->Run({
+		{ "input", tensor }
+		}, {
+			"assign"
+		}, {
+		},
+		&output).ok());
+
+	session->Close();
+}
+
+TEST(TestSessionRun, SelectVariableByIndex) {
+	Scope scope = Scope::NewRootScope();
+
+	auto variable1 = ops::Variable(scope.WithOpName("variable1"), PartialTensorShape(), DT_FLOAT);
+	auto variable2 = ops::Variable(scope.WithOpName("variable2"), PartialTensorShape(), DT_FLOAT);
+	auto variables = InputList(std::initializer_list<Output>({ variable1, variable2 }));
+
+	auto index = ops::Placeholder(scope.WithOpName("index"), DT_INT32, ops::Placeholder::Shape({  }));
+	Output selector = ops::RefSelect(scope.WithOpName("selector"), index, variables);
+}

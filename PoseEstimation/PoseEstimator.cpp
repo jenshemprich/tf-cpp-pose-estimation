@@ -29,14 +29,16 @@ void PoseEstimator::loadModel() {
 		throw tensorflow::errors::NotFound("Failed to load compute graph from '", graph_file, "'");
 	}
 
+	Scope scope = Scope::NewRootScope();
 	GraphDef postProcessing;
-	addPostProcessing(postProcessing);
+	addPostProcessing(scope, postProcessing);
 	graph_def.MergeFrom(postProcessing);
 
 	Status status = NewSession(tensorflow::SessionOptions(), &session);
 	if (!status.ok()) {
 		throw status;
 	}
+
 
 	// Build static app example code (non-working with dll):
 	// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/label_image/main.cc
@@ -53,9 +55,8 @@ void PoseEstimator::loadModel() {
 // Whether to run inference and post-processing in the same or in separate sessions
 // #define SPLIT_RUNS
 
-void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
-	Scope scope = Scope::NewRootScope();
-	auto upsample_size_placeholder = ops::Placeholder(scope.WithOpName("upsample_size"), DT_INT32, ops::Placeholder::Shape({  }));
+void PoseEstimator::addPostProcessing(Scope& scope, GraphDef& graph_def) {
+	 auto upsample_size_placeholder = ops::Placeholder(scope.WithOpName("upsample_size"), DT_INT32, ops::Placeholder::Shape({  }));
 #ifdef SPLIT_RUNS
 	auto inference_tensor_placeholder = ops::Placeholder(scope.WithOpName("inference_tensor"), DT_FLOAT, ops::Placeholder::Shape({ -1, -1, -1, 57 }));
 #else
@@ -64,14 +65,21 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	// TODO Resolve crash when slicing directly and remove the ops::Add(...) workaround (see unit tests)
 	auto inference_tensor_placeholder = ops::Add(scope.WithOpName("workaround"), noop, node_from_other_graph);
 #endif
+
+	/// size = 40x22
 	Output heat_mat = ops::Slice(scope.WithOpName("heat_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 0 }), Input::Initializer({ -1, -1, -1, 19 }));
 	Output paf_mat = ops::Slice(scope.WithOpName("paf_mat"), inference_tensor_placeholder, Input::Initializer({ 0, 0, 0, 19 }), Input::Initializer({ -1, -1, -1, 38 }));
 
+	/// use upscale == 4 or higher to achieve reasonable detection and accuracy of body parts
 	Output heat_mat_up = ops::ResizeArea(scope.WithOpName("heat_mat_up"), heat_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 	Output paf_mat_up = ops::ResizeArea(scope.WithOpName("paf_mat_up"), paf_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
+	   	 
+	/// default == 25, but provides reasonable values down to 5 - may speed up fps by ~40% 
+	auto gauss_kernel_variable = ops::Variable(scope.WithOpName("gauss_kernel_variable"), PartialTensorShape(), DT_FLOAT);
+	auto gauss_kernel = ops::Placeholder(scope.WithOpName("gauss_kernel"), DT_FLOAT, ops::Placeholder::Shape(PartialTensorShape({ -1, -1, 19, 1 })));
+	auto assign_gauss_kernel_variable = ops::Assign(scope.WithOpName("assign_gauss_kernel_variable"), gauss_kernel_variable, Input(gauss_kernel), ops::Assign::ValidateShape(false));
 
-	GaussKernel gauss_kernel(25, 3.0, 19);
-	Output gaussian_heat_mat = ops::DepthwiseConv2dNative(scope.WithOpName("gaussian_heat_mat"), heat_mat_up, Input(gauss_kernel), gtl::ArraySlice<int>({ 1,1,1,1 }), "SAME");
+	Output gaussian_heat_mat = ops::DepthwiseConv2dNative(scope.WithOpName("gaussian_heat_mat"), heat_mat_up, gauss_kernel_variable, gtl::ArraySlice<int>({ 1,1,1,1 }), "SAME");
 	Output max_pooled_in_tensor = ops::MaxPool(scope.WithOpName("max_pooled_in_tensor"), gaussian_heat_mat, gtl::ArraySlice<int>({ 1,3,3,1 }), gtl::ArraySlice<int>({1,1,1,1}), "SAME");
 	Output equal_values = ops::Equal(scope.WithOpName("equal_values"), gaussian_heat_mat, max_pooled_in_tensor);
 	Output tensor_peaks_coords = ops::Where(scope.WithOpName("tensor_peaks_coords"), equal_values);
@@ -82,6 +90,24 @@ void PoseEstimator::addPostProcessing(GraphDef& graph_def) {
 	}
 }
 
+void PoseEstimator::setGaussKernelSize(const size_t size) {
+	GaussKernel gauss_kernel(size, 3.0, 19);
+
+	std::vector<Tensor> ignore_result;
+	const Status session_run = session->Run({
+		{ "gauss_kernel", gauss_kernel }
+		}, {
+			"assign_gauss_kernel_variable"
+		}, {
+		},
+		&ignore_result);
+
+	if (session_run.code() != error::Code::OK) {
+		throw session_run;
+	}
+
+}
+
 const std::vector<Human> PoseEstimator::inference(const TensorMat & input, const int upsample_size) {
 	return inference(input.tensor, upsample_size);
 }
@@ -89,13 +115,13 @@ const std::vector<Human> PoseEstimator::inference(const TensorMat & input, const
 const std::vector<Human> PoseEstimator::inference(const tensorflow::Tensor & input, const int upsample_size) {
 	const int upsample_height = input.dim_size(1) / 8 * upsample_size;
 	const int upsample_width = input.dim_size(2) / 8 * upsample_size;
-	const tensorflow::Tensor upsample_size_tensor = tensorflow::Input::Initializer( {upsample_height, upsample_width} ).tensor;
+	const Tensor upsample_size_tensor = tensorflow::Input::Initializer( {upsample_height, upsample_width} ).tensor;
 
-	Status fetch_tensor;
 	std::vector<Tensor> post_processing;
 #ifdef SPLIT_RUNS
 		std::vector<Tensor> outputs_raw;
-		fetch_tensor = session->Run({
+		Status session_run;
+		session_run = session->Run({
 				{"image:0", input}
 			}, {
 				"Openpose/concat_stage7:0"
@@ -108,7 +134,7 @@ const std::vector<Human> PoseEstimator::inference(const tensorflow::Tensor & inp
 		}
 
 		Tensor& output = outputs_raw.at(0);
-		fetch_tensor = session->Run({
+		session_run = session->Run({
 			{"inference_tensor", output}, {"upsample_size", upsample_size_tensor}
 			}, {
 				"tensor_peaks_coords", "gaussian_heat_mat", "heat_mat_up", "paf_mat_up"
@@ -116,7 +142,8 @@ const std::vector<Human> PoseEstimator::inference(const tensorflow::Tensor & inp
 			},
 			&post_processing);
 #else
-		fetch_tensor = session->Run({
+		const Tensor gaussian_kernel_index = tensorflow::Input::Initializer( 0 ).tensor;
+		const Status session_run = session->Run({
 				{"image:0", input}, {"upsample_size", upsample_size_tensor}
 			}, {
 				"tensor_peaks_coords", "gaussian_heat_mat", "heat_mat_up", "paf_mat_up"
@@ -125,8 +152,8 @@ const std::vector<Human> PoseEstimator::inference(const tensorflow::Tensor & inp
 			&post_processing);
 #endif
 
-	if (fetch_tensor.code() != error::Code::OK) {
-		throw fetch_tensor;
+	if (session_run.code() != error::Code::OK) {
+		throw session_run;
 	}
 
 	Tensor& coords = post_processing.at(0);
@@ -137,23 +164,6 @@ const std::vector<Human> PoseEstimator::inference(const tensorflow::Tensor & inp
 	return estimate_paf(coords, peaks, heat_mat, paf_mat);
 }
 
-void PoseEstimator::imshow(const char * caption, tensorflow::Tensor & tensor, int channel) {
-	float* data = tensor.flat<float>().data();
-	imshow(caption, tensor.dim_size(2), tensor.dim_size(1), &data[0, 0, 0, channel]);
-}
-
-void PoseEstimator::imshow(const char* caption, cv::Mat& mat) {
-	cv::imshow(caption, mat);
-}
-
-// TODO Extract single or multiple layers from NHWC (channels are interleaved)
-void PoseEstimator::imshow(const char* caption, const size_t width, const size_t height, float * data) {
-	cv::Mat tensor_plane(height, width, CV_32FC1, data);
-	cv::Mat debug_output(height, width, CV_8UC1);
-	// tensor_plane.convertTo(debug_output, CV_8UC1, 127, 128);
-	cv::resize(tensor_plane, debug_output, cv::Size(width * 4, height * 4));
-	cv::imshow(caption, debug_output);
-}
 
 vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat) {
 	paf.process(
