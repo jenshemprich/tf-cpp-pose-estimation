@@ -32,12 +32,8 @@ public:
 	void addPostProcessing(tensorflow::Scope& scope, tensorflow::GraphDef& graph_def);
 	void setGaussKernelSize(const size_t size);
 	const std::vector<Human> inference(const TensorMat& input, const int upsample_size);
-	const std::vector<Human> inference(const tensorflow::Tensor& input, const int upsample_size);
-	void draw_humans(cv::Mat& image, const std::vector<Human>& humans) const;
-	void imshow(const char * caption, tensorflow::Tensor & tensor, int channel);
-	void imshow(const char* caption, cv::Mat& mat);
-	void imshow(const char* caption, const size_t height, const size_t width, float * d);
-	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat);
+	void draw_humans(cv::Mat& image, const cv::Rect& view, const std::vector<Human>& humans) const;
+	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat, const cv::Mat& transform);
 private:
 	const char * const graph_file;
 	tensorflow::Session* session;

@@ -6,10 +6,15 @@
 class TensorMat {
 public:
 	TensorMat(const cv::Size& size);
+	TensorMat(const cv::Size& size, const cv::Size& inset);
 	virtual ~TensorMat();
 
-	tensorflow::Tensor& copyFrom(const cv::Mat& mat);
+	TensorMat& copyFrom(const cv::Mat& mat);
 	tensorflow::Tensor tensor;
+	const cv::Size size;
+	const cv::Size inset;
+	const cv::Mat transform;
 private:
 	cv::Mat buffer;
+	cv::Mat view;
 };
