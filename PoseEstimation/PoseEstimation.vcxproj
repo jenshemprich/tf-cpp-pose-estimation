@@ -250,8 +250,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AffineTransform.h" />
     <ClInclude Include="FramesPerSecond.h" />
     <ClInclude Include="GaussKernel.h" />
+    <ClInclude Include="GeometryOperators.h" />
     <ClInclude Include="PoseEstimation.h" />
     <ClInclude Include="pafprocess.h" />
     <ClInclude Include="pch.h" />
@@ -259,8 +261,10 @@
     <ClInclude Include="TensorMat.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AffineTransform.cpp" />
     <ClCompile Include="FramesPerSecond.cpp" />
     <ClCompile Include="GaussKernel.cpp" />
+    <ClCompile Include="GeometryOperators.cpp" />
     <ClCompile Include="PoseEstimation.cpp" />
     <ClCompile Include="pafprocess.cpp" />
     <ClCompile Include="pch.cpp">

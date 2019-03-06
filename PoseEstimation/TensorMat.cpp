@@ -1,30 +1,24 @@
 #include "pch.h"
 
-#include "tensorflow/cc/framework/ops.h"
+#include <opencv2/opencv.hpp>
+#include <tensorflow/cc/framework/ops.h>
 
 #include "TensorMat.h"
 
 using namespace cv;
 using namespace tensorflow;
 
-Point2f operator/(const Point2f& a, const Point2f& b) {
-	return Point2f(a.x / b.x, a.y / b.y);
-}
 
-Mat buffer2view_unit_interval(const Size& size, const Size& inset) {
+AffineTransform buffer2view_unit_interval(const Size& size, const Size& inset) {
 	const Point2f limit = Point2f(inset + size + inset);
-	const Point2f buffer[] = {
+	return AffineTransform({
 		Point2f(inset.width, inset.height) / limit,
 		Point2f(inset.width + size.width, inset.height) / limit,
-		Point2f(inset.width, inset.height + size.height) / limit };
-
-	const Point2f view[] = {
+		Point2f(inset.width, inset.height + size.height) / limit }, {
 		Point2f(0,0),
 		Point2f(1.0, 0),
 		Point2f(0, 1.0)
-	};
-
-	return getAffineTransform(buffer, view);
+		});
 }
 
 TensorMat::TensorMat(const Size& size)

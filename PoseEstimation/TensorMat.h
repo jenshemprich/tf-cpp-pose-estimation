@@ -1,7 +1,6 @@
 #pragma once
 
-#include <opencv2/opencv.hpp>
-#include <tensorflow/cc/framework/ops.h>
+#include "AffineTransform.h"
 
 class TensorMat {
 public:
@@ -13,7 +12,7 @@ public:
 	tensorflow::Tensor tensor;
 	const cv::Size size;
 	const cv::Size inset;
-	const cv::Mat transform;
+	const AffineTransform transform;
 private:
 	cv::Mat buffer;
 	cv::Mat view;

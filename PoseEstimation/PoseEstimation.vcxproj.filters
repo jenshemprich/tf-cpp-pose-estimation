@@ -36,6 +36,12 @@
     <ClInclude Include="TensorMat.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="AffineTransform.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryOperators.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -57,6 +63,12 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="TensorMat.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="AffineTransform.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryOperators.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
