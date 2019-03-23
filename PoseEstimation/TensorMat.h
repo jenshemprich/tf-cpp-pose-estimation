@@ -18,11 +18,14 @@ namespace tensorflow {
 
 class TensorMat {
 public:
+	static const cv::Size AutoResize;
+
 	TensorMat(const cv::Size& size);
 	TensorMat(const cv::Size& size, const cv::Size& inset);
 	virtual ~TensorMat();
 
 	TensorMat& copyFrom(const cv::Mat& mat);
+	TensorMat& resize(const cv::Size& size);
 	TensorMat& resize(const cv::Size& size, const cv::Size& inset);
 
 	tensorflow::ReAllocator allocator;

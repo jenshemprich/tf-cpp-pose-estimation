@@ -52,36 +52,48 @@ AffineTransform buffer2view_unit_interval(const Size& size, const Size& inset) {
 		});
 }
 
-TensorMat::TensorMat(const Size& size) : TensorMat(size, Size(0,0)) {
+
+const cv::Size TensorMat::AutoResize(INT_MIN, INT_MIN);
+
+TensorMat::TensorMat(const Size& size) 
+	: TensorMat(size, Size(0,0)) {
 }
 
 TensorMat::TensorMat(const Size& size, const Size& inset)
 	: allocator()
-	, tensorBuffer(&allocator, DT_FLOAT, TensorShape({ 1, inset.height + size.height + inset.height, inset.width + size.width + inset.width, 3 }))
+	, tensorBuffer()
 	, tensor(tensorBuffer)
-	, buffer(inset + size + inset, CV_32FC3, tensorBuffer.flat<float>().data())
+	, buffer()
 	, size(size)
 	, inset(inset)
-	, view(buffer(Rect(inset, size)))
-	, transform(buffer2view_unit_interval(size, inset)) {
-		if (inset != Size(0, 0)) {
-		buffer = 0;
+	, view()
+	, transform() {
+	if (size != AutoResize) {
+		resize(size, inset);
 	}
 }
 
 TensorMat::~TensorMat() {}
 
 TensorMat& TensorMat::copyFrom(const Mat & mat) {
-	if (size == mat.size()) {
+	if (size == AutoResize) {
+		if (mat.size() != view.size()) {
+			resize(mat.size(), inset);
+		}
 		mat.convertTo(view, CV_32FC3);
-	}
-	else {
+	} else if (size == mat.size()) {
+		mat.convertTo(view, CV_32FC3);
+	} else {
 		Mat resized(size, mat.type());
 		cv::resize(mat, resized, size);
 		resized.convertTo(view, CV_32FC3);
 	}
 
 	return *this;
+}
+
+TensorMat& TensorMat::resize(const Size& size) {
+	return resize(size, inset);
 }
 
 TensorMat& TensorMat::resize(const Size& size, const Size& inset) {
@@ -91,6 +103,10 @@ TensorMat& TensorMat::resize(const Size& size, const Size& inset) {
 	transform = AffineTransform(buffer2view_unit_interval(size, inset));
 	this->size = size;
 	this->inset = inset;
+
+	if (inset != Size(0, 0)) {
+		buffer = 0;
+	}
 
 	return *this;
 }
