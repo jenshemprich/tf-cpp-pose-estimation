@@ -4,7 +4,7 @@ This project demonstrates usage of the Tensorflow C++ interface for pose estimat
 ![Freeriding](images/Freeriding_01_inference.jpg "Freeriding in the swiss alps")
 
 
-Inference, models and post processing steps have been ported from Python to C++ from [tf-pose-estimation](https://github.com/ildoonet/tf-pose-estimation/) project, which in turn has been inspired by [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose).
+Inference, models and post processing steps have been ported from Python to C++ from the [tf-pose-estimation](https://github.com/ildoonet/tf-pose-estimation/) project, which in turn has been inspired by [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose).
 
 
 ## Dependencies
@@ -21,7 +21,7 @@ For the time being, I'm using existing models (mobilenet_thin, cmu) from[tf-pose
 
 
 ## How does it work
-An in-depth article about the underlying algorithm can be found [here](https://arvrjourney.com/human-pose-estimation-using-openpose-with-tensorflow-part-2-e78ab9104fc8). With that knowledge, you can easily follow the code in PoseEstimator.cpp. It's a three-step proces consisting of:
+An in-depth article about the underlying algorithm can be found [here](https://arvrjourney.com/human-pose-estimation-using-openpose-with-tensorflow-part-2-e78ab9104fc8). With that knowledge, you can easily follow the code in PoseEstimator.cpp. It's a three-step process consisting of:
 1. Inference to retrieve heat maps and part affinity fields.
 2. Post-processing to retrieve coordinate candidates
 3. Coco model creation from the coordinate candidates by reducing candidates, turn them into body part lists and output a coco model for each recognized pose.
@@ -34,4 +34,4 @@ For the time being, that issue is workarounded by assigning the inference output
 
 The tensorflow related part of the post processing was relatively straight forward, the most time consuming part was to create the gaussian kernel for the convolution filter with Eigen instead of Numpy.
 
-Because the C++ ops::where() operator outputs coordinates directly instead of producing another NHWC tensor (as the Python op tf.where does), the coco model creation becomes slightly less complex than in the original code. Besides some refactoring to turn the original Python extension code into a C++ class, the redundant loops to gather the peak infos from the coordinates have been replaced by a sort statement to get them into the right order - the subsequent stages of the algorithm depend on the proper sequernce of coco parts.
+Because the C++ ops::where() operator outputs coordinates directly instead of producing another NHWC tensor (as the Python op tf.where does), the coco model creation becomes slightly less complex than in the original code. Besides some refactoring to turn the original Python extension code into a C++ class, the outer loops to gather the peak infos from the coordinates tensor have been replaced by a sort statement to get the coordinates into the right order - the subsequent stages of the algorithm depend on the proper sequernce of coco parts.
