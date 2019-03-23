@@ -1,7 +1,8 @@
 # TensorFlow based Human Pose Estimation in C++
-This project demonstrates how to use the Tensorflow C++ interface to implement pose estimation.
+This project demonstrates usage of the Tensorflow C++ interface for pose estimation.
 
-TODO Image of me posing with inference
+![Freeriding](images/Freeriding_01_inference.jpg "Freeriding in the swiss alps")
+
 
 Inference, models and post processing steps have been ported from Python to C++ from [tf-pose-estimation](https://github.com/ildoonet/tf-pose-estimation/) project, which in turn has been inspired by [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose).
 
