@@ -202,7 +202,7 @@ BodyPart::BodyPart(int part_index, float x, float y, float score)
 Human::Human(const BodyParts & parts, const float score)
 	: parts(parts), score(score) {}
 
-void PoseEstimator::draw_humans(Mat& image, const AffineTransform& view, const vector<Human>& humans) const {
+void PoseEstimator::draw_humans(Mat& image, const AffineTransform& view, const vector<Human>& humans) {
 	for_each(humans.begin(), humans.end(), [&image, &view](const Human& human) {
 		vector<Point> centers(PafProcess::COCOPAIRS_SIZE);
 

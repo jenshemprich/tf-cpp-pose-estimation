@@ -30,7 +30,7 @@ public:
 	void addPostProcessing(tensorflow::Scope& scope, tensorflow::GraphDef& graph_def);
 	void setGaussKernelSize(const size_t size);
 	const std::vector<Human> inference(const TensorMat& input, const int upsample_size);
-	void draw_humans(cv::Mat& image, const AffineTransform& view, const std::vector<Human>& humans) const;
+	static void draw_humans(cv::Mat& image, const AffineTransform& view, const std::vector<Human>& humans);
 	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat, const AffineTransform& transform);
 private:
 	const char * const graph_file;

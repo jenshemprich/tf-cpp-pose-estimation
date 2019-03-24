@@ -32,10 +32,10 @@ public:
 	tensorflow::Tensor tensorBuffer;
 	const tensorflow::Tensor& tensor;
 private:
-	cv::Size size;
-	cv::Size inset;
 	cv::Mat buffer;
-	cv::Mat view;
+	cv::Size size;
 public:
+	cv::Size inset;
+	cv::Mat view;
 	AffineTransform transform;
 };
