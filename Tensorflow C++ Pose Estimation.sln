@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2003
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PoseEstimation", "PoseEstimation\PoseEstimation.vcxproj", "{71655064-43AD-40B1-9756-74EEA6C2E6EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PoseEstimationTests", "PoseEstimationTests\PoseEstimationTests.vcxproj", "{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PoseEstimationSimpleApp", "PoseEstimationSimpleApp\PoseEstimationSimpleApp.vcxproj", "{195142F0-9F6B-45FB-9594-A27A170F98EE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{71655064-43AD-40B1-9756-74EEA6C2E6EA} = {71655064-43AD-40B1-9756-74EEA6C2E6EA}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +46,18 @@ Global
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda-avx2|x64.Build.0 = Release-cuda-avx2|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Debug|x64.ActiveCfg = Debug|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Debug|x64.Build.0 = Debug|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release|x64.ActiveCfg = Release|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release|x64.Build.0 = Release|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2|x64.ActiveCfg = Release-avx2|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2|x64.Build.0 = Release-avx2|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda|x64.Build.0 = Release-cuda|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda-avx2|x64.Build.0 = Release-cuda-avx2|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

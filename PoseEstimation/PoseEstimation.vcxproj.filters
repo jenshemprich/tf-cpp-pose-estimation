@@ -30,9 +30,6 @@
     <ClInclude Include="FramesPerSecond.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="PoseEstimation.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="TensorMat.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
@@ -57,9 +54,6 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="FramesPerSecond.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="PoseEstimation.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="TensorMat.cpp">
