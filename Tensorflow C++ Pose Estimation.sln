@@ -18,6 +18,7 @@ Global
 		Release|x64 = Release|x64
 		Release-avx2|x64 = Release-avx2|x64
 		Release-avx2-fma|x64 = Release-avx2-fma|x64
+		Release-avx-fast|x64 = Release-avx-fast|x64
 		Release-cuda|x64 = Release-cuda|x64
 		Release-cuda-avx2|x64 = Release-cuda-avx2|x64
 	EndGlobalSection
@@ -30,6 +31,8 @@ Global
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2|x64.Build.0 = Release-avx2|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
+		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx-fast|x64.ActiveCfg = Release-avx-fast|x64
+		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-avx-fast|x64.Build.0 = Release-avx-fast|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{71655064-43AD-40B1-9756-74EEA6C2E6EA}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
@@ -42,6 +45,7 @@ Global
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2|x64.Build.0 = Release-avx2|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
+		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-avx-fast|x64.ActiveCfg = Release-avx2-fma|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{950C4DCD-1D8A-48B4-B137-32280C2AFB5F}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
@@ -54,6 +58,8 @@ Global
 		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2|x64.Build.0 = Release-avx2|x64
 		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2-fma|x64.ActiveCfg = Release-avx2-fma|x64
 		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx2-fma|x64.Build.0 = Release-avx2-fma|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx-fast|x64.ActiveCfg = Release-avx-fast|x64
+		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-avx-fast|x64.Build.0 = Release-avx-fast|x64
 		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda|x64.ActiveCfg = Release-cuda|x64
 		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda|x64.Build.0 = Release-cuda|x64
 		{195142F0-9F6B-45FB-9594-A27A170F98EE}.Release-cuda-avx2|x64.ActiveCfg = Release-cuda-avx2|x64
