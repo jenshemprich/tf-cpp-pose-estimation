@@ -10,6 +10,8 @@
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/framework/ops.h"
 
+#include "AffineTransform.h"
+
 #include "GaussKernel.h"
 #include "PoseEstimator.h"
 
@@ -111,9 +113,9 @@ void PoseEstimator::setGaussKernelSize(const size_t size) {
 
 }
 
-const vector<Human> PoseEstimator::inference(const TensorMat & input, const int upsample_size) {
-	const int upsample_height = input.tensor.dim_size(1) / 8 * upsample_size;
-	const int upsample_width = input.tensor.dim_size(2) / 8 * upsample_size;
+const vector<Human> PoseEstimator::inference(const Tensor & input, const int upsample_size) {
+	const int upsample_height = input.dim_size(1) / 8 * upsample_size;
+	const int upsample_width = input.dim_size(2) / 8 * upsample_size;
 	const Tensor upsample_size_tensor = tensorflow::Input::Initializer( {upsample_height, upsample_width} ).tensor;
 
 	vector<Tensor> post_processing;
@@ -121,7 +123,7 @@ const vector<Human> PoseEstimator::inference(const TensorMat & input, const int 
 		vector<Tensor> outputs_raw;
 		Status session_run;
 		session_run = session->Run({
-				{"image:0", input.tensor}
+				{"image:0", input}
 			}, {
 				"Openpose/concat_stage7:0"
 			}, {
@@ -143,7 +145,7 @@ const vector<Human> PoseEstimator::inference(const TensorMat & input, const int 
 #else
 		const Tensor gaussian_kernel_index = tensorflow::Input::Initializer( 0 ).tensor;
 		const Status session_run = session->Run({
-				{"image:0", input.tensor}, {"upsample_size", upsample_size_tensor}
+				{"image:0", input}, {"upsample_size", upsample_size_tensor}
 			}, {
 				"tensor_peaks_coords", "gaussian_heat_mat", "heat_mat_up", "paf_mat_up"
 			}, {
@@ -160,10 +162,10 @@ const vector<Human> PoseEstimator::inference(const TensorMat & input, const int 
 	Tensor& heat_mat = post_processing.at(2);
 	Tensor& paf_mat = post_processing.at(3);
 
-	return estimate_paf(coords, peaks, heat_mat, paf_mat, input.transform);
+	return estimate_paf(coords, peaks, heat_mat, paf_mat);
 }
 
-vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat, const AffineTransform& transform) {
+vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat) {
 	paf.process(
 		coords.dim_size(0), coords.flat<INT64>().data(),
 		peaks.dim_size(1), peaks.dim_size(2), peaks.dim_size(3), peaks.flat<float>().data(),
@@ -179,13 +181,13 @@ vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& pe
 			if (c_idx < 0) {
 				continue; // body part not set
 			} else {
-				const Point2f point = transform({
-					static_cast<float>(paf.get_part_x(c_idx)) / heat_mat.dim_size(2), 
-					static_cast<float>(paf.get_part_y(c_idx)) / heat_mat.dim_size(1)
-				});
 				parts.insert(Human::BodyParts::value_type(
 					part_index,
-					BodyPart(part_index, point.x, point.y, paf.get_part_score(c_idx))));
+					BodyPart(part_index,
+						static_cast<float>(paf.get_part_x(c_idx)) / heat_mat.dim_size(2),
+						static_cast<float>(paf.get_part_y(c_idx)) / heat_mat.dim_size(1), 
+						paf.get_part_score(c_idx)))
+				);
 			}
 		}
 
@@ -202,15 +204,19 @@ BodyPart::BodyPart(int part_index, float x, float y, float score)
 Human::Human(const BodyParts & parts, const float score)
 	: parts(parts), score(score) {}
 
-void PoseEstimator::draw_humans(Mat& image, const AffineTransform& view, const vector<Human>& humans) {
-	for_each(humans.begin(), humans.end(), [&image, &view](const Human& human) {
+void PoseEstimator::draw_humans(Mat& image, const AffineTransform& input, const AffineTransform& view, const vector<Human>& humans) {
+	for_each(humans.begin(), humans.end(), [&image, &input, &view](const Human& human) {
 		vector<Point> centers(PafProcess::COCOPAIRS_SIZE);
 
 		for (int i = 0; i < PafProcess::COCOPAIRS_SIZE; ++i) {
 			auto part = human.parts.find(i);
 			if (part != human.parts.end()) {
 				const BodyPart& body_part = part->second;
-				const Point center = view({ body_part.x, body_part.y });
+
+				// TODO concat transforms on caller side to reduce method parameters 
+				const Point2f normalized = input({ body_part.x, body_part.y });
+				const Point center = view( normalized );
+
 				centers[i] = center;
 				const int* coco_color = PafProcess::CocoColors[i];
 				const Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);

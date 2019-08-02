@@ -1,6 +1,5 @@
 #pragma once
 
-#include "TensorMat.h"
 #include "pafprocess.h"
 
 struct BodyPart {
@@ -29,9 +28,9 @@ public:
 	void loadModel();
 	void addPostProcessing(tensorflow::Scope& scope, tensorflow::GraphDef& graph_def);
 	void setGaussKernelSize(const size_t size);
-	const std::vector<Human> inference(const TensorMat& input, const int upsample_size);
-	static void draw_humans(cv::Mat& image, const AffineTransform& view, const std::vector<Human>& humans);
-	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat, const AffineTransform& transform);
+	const std::vector<Human> inference(const tensorflow::Tensor & input, const int upsample_size);
+	static void draw_humans(cv::Mat& image, const AffineTransform& input, const AffineTransform& view, const std::vector<Human>& humans);
+	std::vector<Human> estimate_paf(const tensorflow::Tensor& coords, const tensorflow::Tensor& peaks, const tensorflow::Tensor& heat_mat, const tensorflow::Tensor& paf_mat);
 private:
 	const char * const graph_file;
 	tensorflow::Session* session;

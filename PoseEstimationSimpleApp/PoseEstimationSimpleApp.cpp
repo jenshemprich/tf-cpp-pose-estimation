@@ -16,6 +16,7 @@
 #include "PoseEstimation/FramesPerSecond.h"
 #include "PoseEstimation/GeometryOperators.h"
 #include "PoseEstimation/PoseEstimator.h"
+#include "PoseEstimation/TensorMat.h"
 
 #include "PoseEstimationSimpleApp.h"
 
@@ -84,7 +85,7 @@ int main(int argc,  char* const argv[]) {
 			cap >> frame;
 			if (frame.empty()) break; // end of video stream
 
-			const vector<Human> humans = pose_estimator.inference(input.copyFrom(frame), heat_mat_upsample_size);
+			const vector<Human> humans = pose_estimator.inference(input.copyFrom(frame).tensor, heat_mat_upsample_size);
 			renderInference(humans, input, frame, fps,  window_name);
 
 			if (waitKey(10) == 27) break; // ESC -> exit
@@ -115,8 +116,8 @@ void renderInference(const std::vector<Human> &humans, const TensorMat & input, 
 		frame.copyTo(view);
 	}
 
-	AffineTransform transform(Rect2f(0.0, 0.0, 1.0, 1.0), roi);
-	PoseEstimator::draw_humans(display, transform, humans);
+	AffineTransform view(Rect2f(0.0, 0.0, 1.0, 1.0), roi);
+	PoseEstimator::draw_humans(display, input.transform, view, humans);
 	fps.update(display);
 
 	namedWindow(window_name, WINDOW_AUTOSIZE | WINDOW_KEEPRATIO);
