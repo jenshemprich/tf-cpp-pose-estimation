@@ -1,24 +1,20 @@
 #include "pch.h"
 
-#include <opencv2/opencv.hpp>
-
 #include "tensorflow/core/platform/env.h"
-#include "Eigen/Dense"
 #include "tensorflow/core/public/session.h"
 #include "tensorflow/cc/ops/standard_ops.h"
-
 #include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/framework/ops.h"
+#include "Eigen/Dense"
 
-#include "AffineTransform.h"
-
+#include "CocoDataModel.h"
 #include "GaussKernel.h"
 #include "PoseEstimator.h"
 
 #include "pafprocess.h"
 
+using namespace coco;
 using namespace std;
-using namespace cv;
 using namespace tensorflow;
 
 PoseEstimator::PoseEstimator(char * const graph_file)
@@ -43,13 +39,6 @@ void PoseEstimator::loadModel() {
 	if (!status.ok()) {
 		throw status;
 	}
-
-
-	// Build static app example code (non-working with dll):
-	// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/label_image/main.cc
-	// session->Reset(tensorflow::NewSession(tensorflow::SessionOptions()));
-	// auto s = new std::unique_ptr<tensorflow::Session>(session);
-	// s->reset(tensorflow::NewSession(tensorflow::SessionOptions()));
 
 	Status session_create_status = session->Create(graph_def);
 	if (!session_create_status.ok()) {
@@ -79,7 +68,7 @@ void PoseEstimator::addPostProcessing(Scope& scope, GraphDef& graph_def) {
 	Output heat_mat_up = ops::ResizeArea(scope.WithOpName("heat_mat_up"), heat_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 	Output paf_mat_up = ops::ResizeArea(scope.WithOpName("paf_mat_up"), paf_mat, upsample_size_placeholder, ops::ResizeArea::AlignCorners(false));
 	   	 
-	/// default == 25, but provides reasonable values down to 5 - may speed up fps by ~40% 
+	/// default == 25, but provides reasonable values down to 5 but reduced accurary - may speed up fps by ~40% 
 	auto gauss_kernel_variable = ops::Variable(scope.WithOpName("gauss_kernel_variable"), PartialTensorShape(), DT_FLOAT);
 	auto gauss_kernel = ops::Placeholder(scope.WithOpName("gauss_kernel"), DT_FLOAT, ops::Placeholder::Shape(PartialTensorShape({ -1, -1, 19, 1 })));
 	auto assign_gauss_kernel_variable = ops::Assign(scope.WithOpName("assign_gauss_kernel_variable"), gauss_kernel_variable, Input(gauss_kernel), ops::Assign::ValidateShape(false));
@@ -165,7 +154,7 @@ const vector<Human> PoseEstimator::inference(const Tensor & input, const int ups
 	return estimate_paf(coords, peaks, heat_mat, paf_mat);
 }
 
-vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat) {
+const vector<Human> PoseEstimator::estimate_paf(const Tensor& coords, const Tensor& peaks, const Tensor& heat_mat, const Tensor& paf_mat) {
 	paf.process(
 		coords.dim_size(0), coords.flat<INT64>().data(),
 		peaks.dim_size(1), peaks.dim_size(2), peaks.dim_size(3), peaks.flat<float>().data(),
@@ -204,35 +193,3 @@ BodyPart::BodyPart(int part_index, float x, float y, float score)
 Human::Human(const BodyParts & parts, const float score)
 	: parts(parts), score(score) {}
 
-void PoseEstimator::draw_humans(Mat& image, const AffineTransform& input, const AffineTransform& view, const vector<Human>& humans) {
-	for_each(humans.begin(), humans.end(), [&image, &input, &view](const Human& human) {
-		vector<Point> centers(PafProcess::COCOPAIRS_SIZE);
-
-		for (int i = 0; i < PafProcess::COCOPAIRS_SIZE; ++i) {
-			auto part = human.parts.find(i);
-			if (part != human.parts.end()) {
-				const BodyPart& body_part = part->second;
-
-				// TODO concat transforms on caller side to reduce method parameters 
-				const Point2f normalized = input({ body_part.x, body_part.y });
-				const Point center = view( normalized );
-
-				centers[i] = center;
-				const int* coco_color = PafProcess::CocoColors[i];
-				const Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);
-				circle(image, center, 3, color, 3, 8, 0);
-			}
-		}
-
-		// CocoPairsRender = CocoPairs[:-2] -> coco pairs but the last two elements
-		for (int pair_order = 0; pair_order < PafProcess::COCOPAIRS_SIZE - 2; ++pair_order) {
-			const int* pair = PafProcess::COCOPAIRS[pair_order];
-		
-			if (human.parts.find(pair[0]) != human.parts.end() && human.parts.find(pair[1]) != human.parts.end()) {
-				const int* coco_color = PafProcess::CocoColors[pair_order];
-				const Scalar_<int> color(coco_color[0], coco_color[1], coco_color[2]);
-				line(image, centers[pair[0]], centers[pair[1]], color, 3);
-			}
-		}
-	});
-}

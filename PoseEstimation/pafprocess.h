@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <basetsd.h>
+
 
 class PafProcess {
 	static const float THRESH_HEAT;

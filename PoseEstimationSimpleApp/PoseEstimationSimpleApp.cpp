@@ -13,16 +13,19 @@
 #include "tensorflow/cc/ops/standard_ops.h"
 
 #include "PoseEstimation/AffineTransform.h"
+#include "PoseEstimation/CocoDataModel.h"
 #include "PoseEstimation/FramesPerSecond.h"
 #include "PoseEstimation/GeometryOperators.h"
 #include "PoseEstimation/PoseEstimator.h"
 #include "PoseEstimation/TensorMat.h"
 
+#include "CocoOpenCvRenderer.h"
 #include "PoseEstimationSimpleApp.h"
 
 
-using namespace std;
+using namespace coco;
 using namespace cv;
+using namespace std;
 using namespace tensorflow;
 
 
@@ -59,8 +62,8 @@ int main(int argc,  char* const argv[]) {
 		const int heat_mat_upsample_size = 4;
 		const int frame_max_size = 320;
 		const int gauss_kernel_size = 25;
-		const cv::Size inset = cv::Size(0, 0);
-		//const cv::Size inset = cv::Size(16, 16);
+		//const cv::Size inset = cv::Size(0, 0);
+		const cv::Size inset = cv::Size(16, 16);
 		//const cv::Size inset = cv::Size(32, 32);
 
 		PoseEstimator pose_estimator(argv[1]);
@@ -108,7 +111,10 @@ int main(int argc,  char* const argv[]) {
 void renderInference(const std::vector<Human> &humans, const TensorMat & input, cv::Mat &frame, FramesPerSecond &fps, const std::string &window_name) {
 	const cv::Size display_inset = input.inset * frame.size() / input.view.size();
 	const bool render_insets = input.inset != cv::Size(0, 0);
+
+	// TODO resolve "render_insets" condition and init all beforehand -> improved performance
 	Mat display = render_insets ? Mat(display_inset + frame.size() + display_inset, CV_8UC3) : frame;
+
 	const Rect roi = Rect(Point(display_inset), frame.size());
 	if (display_inset != Size(0, 0)) {
 		display = 0;
@@ -116,8 +122,11 @@ void renderInference(const std::vector<Human> &humans, const TensorMat & input, 
 		frame.copyTo(view);
 	}
 
-	AffineTransform view(Rect2f(0.0, 0.0, 1.0, 1.0), roi);
-	PoseEstimator::draw_humans(display, input.transform, view, humans);
+	AffineTransform view_transform(Rect2f(0.0, 0.0, 1.0, 1.0), roi);
+
+	coco::OpenCvRenderer renderer = { display, input.transform, view_transform };
+
+	renderer.draw(humans);
 	fps.update(display);
 
 	namedWindow(window_name, WINDOW_AUTOSIZE | WINDOW_KEEPRATIO);

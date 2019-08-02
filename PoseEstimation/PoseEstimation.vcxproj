@@ -324,6 +324,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AffineTransform.h" />
+    <ClInclude Include="CocoDataModel.h" />
     <ClInclude Include="FramesPerSecond.h" />
     <ClInclude Include="GaussKernel.h" />
     <ClInclude Include="GeometryOperators.h" />
@@ -334,6 +335,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AffineTransform.cpp" />
+    <ClCompile Include="CocoDataModel.cpp" />
     <ClCompile Include="FramesPerSecond.cpp" />
     <ClCompile Include="GaussKernel.cpp" />
     <ClCompile Include="GeometryOperators.cpp" />

@@ -39,6 +39,9 @@
     <ClInclude Include="GeometryOperators.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="CocoDataModel.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -63,6 +66,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="GeometryOperators.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="CocoDataModel.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

@@ -18,9 +18,15 @@
     <ClCompile Include="PoseEstimationSimpleApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CocoOpenCvRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PoseEstimationSimpleApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CocoOpenCvRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
