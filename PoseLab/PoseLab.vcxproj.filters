@@ -39,11 +39,11 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PoseLabVideoSurface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PoseLab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,5 +60,13 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PoseLab.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="PoseLabVideoSurface.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="PoseLab.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

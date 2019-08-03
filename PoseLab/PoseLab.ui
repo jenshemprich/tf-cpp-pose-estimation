@@ -14,14 +14,27 @@
    <string>PoseLab</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGraphicsView" name="graphicsView">
+   <widget class="QListWidget" name="videoInputs">
     <property name="geometry">
      <rect>
-      <x>105</x>
-      <y>31</y>
-      <width>381</width>
-      <height>281</height>
+      <x>10</x>
+      <y>30</y>
+      <width>71</width>
+      <height>301</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="videoOutput">
+    <property name="geometry">
+     <rect>
+      <x>106</x>
+      <y>33</y>
+      <width>471</width>
+      <height>301</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>
@@ -31,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
