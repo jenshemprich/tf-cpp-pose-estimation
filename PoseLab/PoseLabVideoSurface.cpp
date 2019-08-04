@@ -49,8 +49,7 @@ bool PoseLabVideoSurface::present(const QVideoFrame& frame) {
 			frametodraw.width(),
 			frametodraw.height(),
 			frametodraw.bytesPerLine(),
-			QImage::Format_RGB888);
-		// TODO Originally QImage::Format_RGB444, looks funny
+			QImage::Format_ARGB32);
 
 		myLabel->resize(image.size());
 
