@@ -172,9 +172,9 @@ void OpenGlVideoView::resize(int w, int h)
 }
 
 void OpenGlVideoView::paint() {
-	// SET THE VIEW PORT AND CLEAR THE SCREEN BUFFER
+	// SET THE VIEW PORT
 	glViewport(0, 0, localWidth, localHeight);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//  skip glClear since the screen buffer is completely replaced by video frame, and depth is unused
 
 	// MAKE SURE WE HAVE A TEXTURE TO SHOW
 	if (videoTexture) {
