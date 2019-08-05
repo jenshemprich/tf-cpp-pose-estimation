@@ -31,6 +31,9 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{a6ef6e6b-5f1c-4fa5-88ba-d66b4ab71a79}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\qdarkstyle">
+      <UniqueIdentifier>{99a63c87-26e4-4555-ad7e-33ea0b6b6d48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,6 +63,9 @@
     <QtRcc Include="PoseLab.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+    <QtRcc Include="Resources\qdarkstyle\style.qrc">
+      <Filter>Resource Files\qdarkstyle</Filter>
+    </QtRcc>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PoseLab.rc" />
@@ -78,6 +84,9 @@
     </None>
     <None Include="Resources\Shaders\identity_fragment_shader.glsl">
       <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Resources\qdarkstyle\style.qss">
+      <Filter>Resource Files\qdarkstyle</Filter>
     </None>
   </ItemGroup>
 </Project>

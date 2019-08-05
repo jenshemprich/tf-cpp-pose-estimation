@@ -146,11 +146,13 @@
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="PoseLab.qrc" />
+    <QtRcc Include="Resources\qdarkstyle\style.qrc" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PoseLab.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\qdarkstyle\style.qss" />
     <None Include="Resources\Shaders\identity_fragment_shader.glsl" />
     <None Include="Resources\Shaders\identity_vertex_shader.glsl" />
   </ItemGroup>

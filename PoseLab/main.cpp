@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QApplication>
 #include <QCamera>
+#include <qfile.h>
 #include <QVideoSurfaceFormat>
 #include <QCameraInfo>
 #include <QVideoWidget>
@@ -10,8 +11,23 @@
 
 using namespace std;
 
+void setStyle(const char* resource_path) {
+	QFile f(resource_path);
+	if (!f.exists()) {
+		qDebug() << "Unable to set stylesheet, file not found";
+		exit(1);
+	} else {
+		f.open(QFile::ReadOnly | QFile::Text);
+		QTextStream ts(&f);
+		qApp->setStyleSheet(ts.readAll());
+	}
+}
+
 int main(int argc, char *argv[]) {
+
 	QApplication a(argc, argv);
+	setStyle(":qdarkstyle/style.qss");
+
 	PoseLab poseLab;
 	poseLab.show();
 
