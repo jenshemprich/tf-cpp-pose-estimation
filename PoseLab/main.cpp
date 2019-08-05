@@ -49,9 +49,18 @@ int main(int argc, char *argv[]) {
 	// Using OpenGL with Vertex and frsgmant shader redM$ Camera uces
 	// - cpu to 28%
 	// + gpu to 43% which is quite a lot
+
+	// Must create new object and set that in order to apply settings
+	QCameraViewfinderSettings settings(camera->viewfinderSettings());
+	settings.setResolution(640, 480);
+	settings.setMinimumFrameRate(15); // Wrong values are fatal
+	settings.setMaximumFrameRate(15); // Wrong values are fatal
+	camera->setViewfinderSettings(settings);
+
 	camera->setViewfinder(poseLab.openGLvideoView->surface);
 	camera->start();
-	const QSize resolution = camera.get()->viewfinderSettings().resolution();
+
+	const QSize resolution = camera->viewfinderSettings().resolution();
 	poseLab.openGLvideoView->setFixedSize(resolution);
 
 	// M$ Camera app has 3% cpu + 8% GPU wich is what we want too
