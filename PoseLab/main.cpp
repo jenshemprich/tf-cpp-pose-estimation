@@ -31,24 +31,19 @@ int main(int argc, char *argv[]) {
 		camera = make_unique<QCamera>(new QCamera(cameras[0]));
 	}
 
-	// How do they perform?
-	// OpenCV eats up 50-60% percent cpu and no gpu when streaming HD from the back camera 
+	// Camera stream performance 1080p@30:
+	// 50-60% with OpenCV when streaming HD from the back camera 
+	// 42% cpu with drawing image to label
+	// 33% with QVideoView
+	// Using OpenGLWidget with Vertex and fragmant shader:
+	// - cpu to 28%, gpu to 43% which is quite a lot
+
+	// TODO M$ Camera app has 3% cpu + 8% GPU wich is what we want -> WMF?
+	// - M$ camera app uses GPU video module which is a little different from 3D
+
+	// Okay, better than OpenCV but with high GPU load, and M$ Camera up is on top:
+
 	camera->setCaptureMode(QCamera::CaptureVideo);
-
-	// 42% cpu
-	// auto camera = make_unique<QCamera>(new QCamera(QCamera::FrontFace));
-	// auto camera = make_unique<QCamera>(new QCamera);
-	//camera->setViewfinder(poseLab.videoSurface);
-	//camera->start();
-
-	// Using QVideoView reduces cpu down from 42% to 33%, but still too much
-	// Also how to limit frame rate
-	// camera->setViewfinder(poseLab.videoWidget.get());
-	// camera->start();
-
-	// Using OpenGL with Vertex and frsgmant shader redM$ Camera uces
-	// - cpu to 28%
-	// + gpu to 43% which is quite a lot
 
 	// Must create new object and set that in order to apply settings
 	QCameraViewfinderSettings settings(camera->viewfinderSettings());
@@ -57,17 +52,8 @@ int main(int argc, char *argv[]) {
 	settings.setMaximumFrameRate(15); // Wrong values are fatal
 	camera->setViewfinderSettings(settings);
 
-	camera->setViewfinder(poseLab.openGLvideoView->surface);
+	camera->setViewfinder(poseLab.video->surface);
 	camera->start();
-
-	const QSize resolution = camera->viewfinderSettings().resolution();
-	poseLab.openGLvideoView->setFixedSize(resolution);
-
-	// M$ Camera app has 3% cpu + 8% GPU wich is what we want too
-	// M$ camera app uses GPU video module which is a little different from 3D
-
-	// Okay, better than OpenCV but with high GPU load, and M$ Camera up is on top:
-
 
 	return a.exec();
 }

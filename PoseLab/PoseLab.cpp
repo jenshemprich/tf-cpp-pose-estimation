@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <QVideoWidget>
+#include <QResizeEVent>
 
 #include "PoseLab.h"
 
@@ -8,14 +9,10 @@ using namespace std;
 
 PoseLab::PoseLab(QWidget *parent)
 	: QMainWindow(parent)
-	, videoSurface(new PoseLabVideoSurface(this))
-	, openGLvideoView(nullptr)
+	, video(nullptr)
 {
 	ui.setupUi(this);
-	videoSurface->setTarget(ui.videoOutput);
+	centralWidget()->setLayout(ui.gridLayout);
 
-	videoWidget = make_unique<QVideoWidget>(new QVideoWidget(ui.videoWidgetContainer));
-	videoWidget->setFixedSize(1920, 1080);
-
-	openGLvideoView = ui.openGLvideo;
+	video = ui.openGLvideo;
 }

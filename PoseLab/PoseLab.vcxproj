@@ -132,7 +132,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PoseLabVideoSurface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="PoseLab.h" />
@@ -141,7 +140,6 @@
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtMultimediaWidgets</IncludePath>
     </QtMoc>
     <ClInclude Include="pch.h" />
-    <QtMoc Include="PoseLabVideoSurface.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PoseLab.ui" />

@@ -42,9 +42,6 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PoseLabVideoSurface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OpenGlVideoView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,9 +65,6 @@
     <ResourceCompile Include="PoseLab.rc" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="PoseLabVideoSurface.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="PoseLab.h">
       <Filter>Header Files</Filter>
     </QtMoc>
