@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>Resources/Shaders/identity_fragment_shader.glsl</file>
         <file>Resources/Shaders/identity_vertex_shader.glsl</file>
+        <file>Resources/ICON-icon.png</file>
+        <file>Resources/logo-ps.png</file>
     </qresource>
 </RCC>

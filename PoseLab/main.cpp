@@ -5,7 +5,7 @@
 #include <qfile.h>
 #include <QVideoSurfaceFormat>
 #include <QCameraInfo>
-#include <QVideoWidget>
+#include <QMediaPlayer>
 
 #include "PoseLab.h"
 
@@ -23,29 +23,24 @@ void setStyle(const char* resource_path) {
 	}
 }
 
-int main(int argc, char *argv[]) {
-
-	QApplication a(argc, argv);
-	setStyle(":qdarkstyle/style.qss");
-
-	PoseLab poseLab;
-	poseLab.show();
-
-	unique_ptr<QCamera> camera;
+unique_ptr<QCamera> camera() {
+	QCamera* camera = nullptr;
 	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
 	foreach(const QCameraInfo & cameraInfo, cameras) {
 		//const QString description = cameraInfo.description();
 		//if (description.contains("Front")) {
 		if (cameraInfo.position() == QCamera::Position::FrontFace) {
-				camera = make_unique<QCamera>(new QCamera(cameraInfo));
+			camera = new QCamera(cameraInfo);
 		}
 	}
 
 	// TODO Cameras don't seem to have a position on Surface 4 
 	// TODO Camera is alwys rear, no matter what (description says front)
 	if (camera == nullptr) {
-		camera = make_unique<QCamera>(new QCamera(cameras[0]));
+		camera = new QCamera(cameras[0]);
 	}
+	return unique_ptr<QCamera>(camera);
+}
 
 	// Camera stream performance 1080p@30:
 	// 50-60% with OpenCV when streaming HD from the back camera 
@@ -58,7 +53,21 @@ int main(int argc, char *argv[]) {
 	// - M$ camera app uses GPU video module which is a little different from 3D
 
 	// Okay, better than OpenCV but with high GPU load, and M$ Camera up is on top:
+void show(unique_ptr<QCamera>& camera, QAbstractVideoSurface* surface) {
+	camera->setCaptureMode(QCamera::CaptureVideo);
 
+	// Must create new object and set that in order to apply settings
+	//QCameraViewfinderSettings settings(camera->viewfinderSettings());
+	//settings.setResolution(640, 480);
+	//settings.setMinimumFrameRate(15); // Wrong values are fatal
+	//settings.setMaximumFrameRate(15); // Wrong values are fatal
+	//camera->setViewfinderSettings(settings);
+
+	camera->setViewfinder(surface);
+	camera->start();
+}
+
+void show(unique_ptr<QCamera>& camera, QVideoWidget* surface) {
 	camera->setCaptureMode(QCamera::CaptureVideo);
 
 	// Must create new object and set that in order to apply settings
@@ -68,8 +77,53 @@ int main(int argc, char *argv[]) {
 	settings.setMaximumFrameRate(15); // Wrong values are fatal
 	camera->setViewfinderSettings(settings);
 
-	camera->setViewfinder(poseLab.video->surface);
+	camera->setViewfinder(surface);
 	camera->start();
+}
+
+unique_ptr<QMediaPlayer> mediaPlayer(const char* path) {
+	QMediaPlayer* player = new QMediaPlayer();
+	QUrl url = QUrl::fromLocalFile(path);
+	qDebug() << url;
+	player->setMedia(url);
+
+	return unique_ptr<QMediaPlayer>(player);
+}
+
+void show(unique_ptr< QMediaPlayer >& player, QAbstractVideoSurface* surface) {
+	player->setVideoOutput(surface);
+	player->play();
+	assert(player->isAvailable());
+}
+
+void show(unique_ptr< QMediaPlayer >& player, QVideoWidget* surface) {
+	player->setVideoOutput(surface);
+	surface->show();
+	player->play();
+	assert(player->isAvailable());
+}
+
+int main(int argc, char* argv[]) {
+	QApplication a(argc, argv);
+	setStyle(":qdarkstyle/style.qss");
+
+	PoseLab poseLab;
+	poseLab.show();
+
+	unique_ptr<QCamera> cam = camera();
+	show(cam, poseLab.video->surface);
+
+	//unique_ptr<QMediaPlayer> player1 = mediaPlayer("../testdata/Yoga Morning Fresh  _  Yoga With Adriene 360p.mp4");
+	//show(player1, poseLab.video->surface);
+
+	unique_ptr<QMediaPlayer> player2 = mediaPlayer("C:/Users/jens/Videos/Shorts/the cat came back.mpg");
+	show(player2, poseLab.videoWidget);	
+	
+	// https://forum.qt.io/topic/89856/switch-qmultimedia-backend-without-recompiling-whole-qt/2
+	// -> install https://github.com/Nevcairiel/LAVFilters/releases or Haali Media Splitter
+	// - mp4 still won't play correctly
+	// wmf backend doesn't play avi, and won't enum cameras
+	// TODO webm 3fp plays good -> convert samples  or use OpenCV
 
 	return a.exec();
 }

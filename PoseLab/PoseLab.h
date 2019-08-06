@@ -12,6 +12,7 @@ class PoseLab : public QMainWindow
 public:
 	PoseLab(QWidget* parent = Q_NULLPTR);
 	OpenGlVideoView* video;
+	QVideoWidget* videoWidget;
 private:
 	Ui::PoseLabClass ui;
 };

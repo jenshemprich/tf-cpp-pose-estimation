@@ -15,6 +15,7 @@ PoseLab::PoseLab(QWidget *parent)
 	centralWidget()->setLayout(ui.gridLayout);
 
 	video = ui.openGLvideo;
+	videoWidget = ui.videoWidget;
 
 	// Workaround gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
