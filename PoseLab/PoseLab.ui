@@ -124,6 +124,9 @@
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
+        <property name="textInteractionFlags">
+         <set>Qt::NoTextInteraction</set>
+        </property>
        </widget>
       </widget>
      </item>
