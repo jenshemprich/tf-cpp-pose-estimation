@@ -27,7 +27,6 @@ public:
 		OpenGlVideoView* display;
 	}  * surface;
 
-
 	virtual bool isValid() const {
 		return (wasInitialized());
 	}
@@ -39,23 +38,14 @@ public:
 	void setFrame(const QVideoFrame& frame);
 	//void setFrame(QImage frame);
 
-	virtual void process() { ; }
-	virtual void initialize();
-	virtual void resize(int w, int h);
-	virtual void paint();
+
+	bool hasHeightForWidth() const override;
+	int heightForWidth(int width) const override;
 
 protected:
-	void initializeGL() {
-		initialize();
-	}
-
-	void resizeGL(int w, int h)	{
-		resize(w, h);
-	}
-
-	void paintGL() {
-		paint();
-	}
+	void initializeGL();
+	void resizeGL(int w, int h)	override;
+	void paintGL() override;
 
 	QOpenGLVertexArrayObject vertexArrayObject;
 	QOpenGLBuffer quadVertexBuffer, quadIndexBuffer;
@@ -65,4 +55,5 @@ protected:
 	int localWidth, localHeight;
 	qreal devicePixelRatio;
 
+	int videoWidth, videoHeight;
 };

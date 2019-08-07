@@ -19,73 +19,209 @@
      <rect>
       <x>20</x>
       <y>30</y>
-      <width>721</width>
-      <height>501</height>
+      <width>623</width>
+      <height>440</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="3" column="6">
-      <widget class="OpenGlVideoView" name="openGLvideo" native="true">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>1</horstretch>
-         <verstretch>1</verstretch>
-        </sizepolicy>
-       </property>
-       <widget class="QLabel" name="overlayTest">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>356</width>
-          <height>300</height>
-         </rect>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap resource="PoseLab.qrc">:/Resources/logo-ps.png</pixmap>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::NoTextInteraction</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="fps">
-        <property name="geometry">
-         <rect>
-          <x>50</x>
-          <y>340</y>
-          <width>111</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>10.2 FPS </string>
-        </property>
-       </widget>
-      </widget>
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item row="2" column="1">
+      <layout class="QVBoxLayout" name="videoInputs">
+       <item>
+        <widget class="QListWidget" name="cameras">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>64</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>96</width>
+           <height>96</height>
+          </size>
+         </property>
+         <property name="movement">
+          <enum>QListView::Static</enum>
+         </property>
+         <property name="flow">
+          <enum>QListView::TopToBottom</enum>
+         </property>
+         <property name="isWrapping" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="resizeMode">
+          <enum>QListView::Adjust</enum>
+         </property>
+         <property name="viewMode">
+          <enum>QListView::IconMode</enum>
+         </property>
+         <property name="modelColumn">
+          <number>0</number>
+         </property>
+         <property name="uniformItemSizes">
+          <bool>true</bool>
+         </property>
+         <property name="itemAlignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="movies">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>64</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>64</width>
+           <height>64</height>
+          </size>
+         </property>
+         <property name="resizeMode">
+          <enum>QListView::Adjust</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="comboBox">
-       <property name="currentText">
-        <string comment="Model" extracomment="Choose the inference model"/>
+     <item row="2" column="4">
+      <layout class="QGridLayout" name="MaintainAspectRatio">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetNoConstraint</enum>
        </property>
-      </widget>
+       <item row="2" column="1">
+        <spacer name="verticalSpacerBottom">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="1">
+        <spacer name="verticalSpacerTop">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="OpenGlVideoView" name="openGLvideo" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <widget class="QLabel" name="overlayTest">
+          <property name="geometry">
+           <rect>
+            <x>-31</x>
+            <y>-11</y>
+            <width>331</width>
+            <height>311</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="pixmap">
+           <pixmap resource="PoseLab.qrc">:/Resources/logo-ps.png</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::NoTextInteraction</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="fps">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>0</y>
+            <width>70</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>10.2 FPS </string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <spacer name="Left">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="2">
+        <spacer name="Right">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </item>
-     <item row="1" column="6">
+     <item row="1" column="4">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QToolButton" name="toolButton_3">
@@ -149,35 +285,6 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="1">
-      <widget class="QListWidget" name="videoInputs">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>1</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="7">
-      <widget class="QVideoWidget" name="videoWidget" native="true">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>1</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>200</height>
-        </size>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
   </widget>
@@ -197,12 +304,6 @@
    <class>OpenGlVideoView</class>
    <extends>QWidget</extends>
    <header>openglvideoview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QVideoWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">qvideowidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

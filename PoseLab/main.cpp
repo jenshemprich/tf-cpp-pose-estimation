@@ -96,13 +96,6 @@ void show(unique_ptr< QMediaPlayer >& player, QAbstractVideoSurface* surface) {
 	assert(player->isAvailable());
 }
 
-void show(unique_ptr< QMediaPlayer >& player, QVideoWidget* surface) {
-	player->setVideoOutput(surface);
-	surface->show();
-	player->play();
-	assert(player->isAvailable());
-}
-
 int main(int argc, char* argv[]) {
 	QApplication a(argc, argv);
 	setStyle(":qdarkstyle/style.qss");
@@ -110,15 +103,25 @@ int main(int argc, char* argv[]) {
 	PoseLab poseLab;
 	poseLab.show();
 
-	unique_ptr<QCamera> cam = camera();
-	show(cam, poseLab.video->surface);
+	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+	foreach(const QCameraInfo & cameraInfo, cameras) {
+		QString description = cameraInfo.description();
+		if (description.indexOf("Microsoft ") == 0) {
+			description = description.mid(10);
+		}
+		if (description.indexOf("Camera ") == 0) {
+			description = description.mid(7);
+		}
+		new QListWidgetItem(QIcon(":Resources/Devices/camera_lens.png"), description, poseLab.cameras);
+	}
+
+	//unique_ptr<QCamera> cam = camera();
+	//show(cam, poseLab.video->surface);
 
 	//unique_ptr<QMediaPlayer> player1 = mediaPlayer("../testdata/Yoga Morning Fresh  _  Yoga With Adriene 360p.mp4");
-	//show(player1, poseLab.video->surface);
+	unique_ptr<QMediaPlayer> player1 = mediaPlayer("../testdata/Handstand_240p.3gp");
+	show(player1, poseLab.video->surface);
 
-	unique_ptr<QMediaPlayer> player2 = mediaPlayer("C:/Users/jens/Videos/Shorts/the cat came back.mpg");
-	show(player2, poseLab.videoWidget);	
-	
 	// https://forum.qt.io/topic/89856/switch-qmultimedia-backend-without-recompiling-whole-qt/2
 	// -> install https://github.com/Nevcairiel/LAVFilters/releases or Haali Media Splitter
 	// - mp4 still won't play correctly

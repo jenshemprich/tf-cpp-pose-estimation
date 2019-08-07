@@ -9,6 +9,7 @@ OpenGlVideoView::OpenGlVideoView(QWidget *parent)
 	: QOpenGLWidget(parent) 
 	, surface(new VideoSurface(this))
 	, videoTexture(nullptr)
+	, videoWidth(640), videoHeight(360)
 {}
 
 OpenGlVideoView::~OpenGlVideoView()
@@ -38,8 +39,7 @@ bool OpenGlVideoView::VideoSurface::present(const QVideoFrame& frame) {
 
 // OpenGL code based on https://hackaday.io/project/28720-real-time-random-pixel-shuffling/details
 
-void OpenGlVideoView::initialize()
-{
+void OpenGlVideoView::initializeGL() {
 	// INITIALIZE OUR GL CALLS AND SET THE CLEAR COLOR
 	initializeOpenGLFunctions();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -115,8 +115,7 @@ void OpenGlVideoView::initialize()
 	setlocale(LC_ALL, "");
 }
 
-void OpenGlVideoView::setFrame(const QVideoFrame& frame)
-{
+void OpenGlVideoView::setFrame(const QVideoFrame& frame) {
 	QVideoFrame localFrame = frame;
 	if (localFrame.map(QAbstractVideoBuffer::ReadOnly)) {
 		makeCurrent();
@@ -153,25 +152,25 @@ void OpenGlVideoView::setFrame(const QVideoFrame& frame)
 		}
 		localFrame.unmap();
 
-		// PROCESS THE TEXTURE
-		process();
+		videoWidth = frame.width();
+		videoHeight = frame.height();
+		setMinimumSize(videoWidth, videoHeight);
 
-		// UPDATE THE USER DISPLAY
 		update();
 	}
 }
 
-void OpenGlVideoView::resize(int w, int h)
-{
+void OpenGlVideoView::resizeGL(int w, int h) {
 	// Get the Desktop Widget so that we can get information about multiple monitors connected to the system.
 	QDesktopWidget* dkWidget = QApplication::desktop();
 	QList<QScreen*> screenList = QGuiApplication::screens();
 	qreal devicePixelRatio = screenList[dkWidget->screenNumber(this)]->devicePixelRatio();
 	localHeight = h * devicePixelRatio;
 	localWidth = w * devicePixelRatio;
+	QOpenGLWidget::resizeGL(w, h);
 }
 
-void OpenGlVideoView::paint() {
+void OpenGlVideoView::paintGL() {
 	// SET THE VIEW PORT
 	glViewport(0, 0, localWidth, localHeight);
 	//  skip glClear since the screen buffer is completely replaced by video frame, and depth is unused
@@ -199,4 +198,12 @@ void OpenGlVideoView::paint() {
 			program.release();
 		}
 	}
+}
+
+bool OpenGlVideoView::hasHeightForWidth() const {
+	return true;
+}
+
+int OpenGlVideoView::heightForWidth(int width) const {
+	return width * videoHeight / videoWidth;
 }

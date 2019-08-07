@@ -34,6 +34,9 @@
     <Filter Include="Resource Files\qdarkstyle">
       <UniqueIdentifier>{99a63c87-26e4-4555-ad7e-33ea0b6b6d48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Devices">
+      <UniqueIdentifier>{5d4a573a-254d-4aac-bc6e-3ab768b1a247}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -88,5 +91,10 @@
     <None Include="Resources\qdarkstyle\style.qss">
       <Filter>Resource Files\qdarkstyle</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Devices\camera_lens.png">
+      <Filter>Resource Files\Devices</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -156,6 +156,9 @@
     <None Include="Resources\Shaders\identity_fragment_shader.glsl" />
     <None Include="Resources\Shaders\identity_vertex_shader.glsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Devices\camera_lens.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
     <Import Project="$(QtMsBuild)\qt.targets" />

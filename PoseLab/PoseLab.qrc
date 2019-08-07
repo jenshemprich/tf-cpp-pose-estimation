@@ -4,5 +4,6 @@
         <file>Resources/Shaders/identity_vertex_shader.glsl</file>
         <file>Resources/ICON-icon.png</file>
         <file>Resources/logo-ps.png</file>
+        <file>Resources/Devices/camera_lens.png</file>
     </qresource>
 </RCC>
