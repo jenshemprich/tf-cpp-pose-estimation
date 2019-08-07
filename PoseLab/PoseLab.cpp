@@ -17,7 +17,8 @@ PoseLab::PoseLab(QWidget *parent)
 
 	video = ui.openGLvideo;
 	cameras = ui.cameras;
-	
+	movies = ui.movies;
+
 	// TODO Move to OpenGLVideo constructor, but doesn't have any effect there
 	QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	policy.setHeightForWidth(true);

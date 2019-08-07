@@ -5,5 +5,7 @@
         <file>Resources/ICON-icon.png</file>
         <file>Resources/logo-ps.png</file>
         <file>Resources/Devices/camera_lens.png</file>
+        <file>Resources/Devices/Microsoft Camera Front.png</file>
+        <file>Resources/Devices/Microsoft Camera Rear.png</file>
     </qresource>
 </RCC>

@@ -106,14 +106,27 @@ int main(int argc, char* argv[]) {
 	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
 	foreach(const QCameraInfo & cameraInfo, cameras) {
 		QString description = cameraInfo.description();
+
+		QString iconResource = ":Resources/Devices/" + description + ".png";
+		if (!QFile::exists(iconResource)) {
+			iconResource = ":Resources/Devices/camera_lens.png";
+		} 
+
 		if (description.indexOf("Microsoft ") == 0) {
 			description = description.mid(10);
 		}
 		if (description.indexOf("Camera ") == 0) {
 			description = description.mid(7);
 		}
-		new QListWidgetItem(QIcon(":Resources/Devices/camera_lens.png"), description, poseLab.cameras);
+		new QListWidgetItem(QIcon(iconResource), description, poseLab.cameras);
 	}
+	poseLab.cameras->setVisible(cameras.size() > 0);
+
+	// TODO Show item text only if multiple cameras
+
+	// TODO resolve hardcoded horizontal size hack to good practice
+	poseLab.cameras->setFixedWidth(96);
+	poseLab.movies->setFixedWidth(96);
 
 	//unique_ptr<QCamera> cam = camera();
 	//show(cam, poseLab.video->surface);
