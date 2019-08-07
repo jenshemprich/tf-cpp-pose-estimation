@@ -24,10 +24,6 @@ protected:
 	std::unique_ptr<PoseEstimator> pose_estimator;
 	TensorMat input;
 
-	QImage frameToImage(QVideoFrame& frame);
-	cv::Mat QImageToCvMat(const QImage& inImage, bool inCloneImageData);
-	cv::Mat QPixmapToCvMat(const QPixmap& inPixmap, bool inCloneImageData);
-
 private:
 	Ui::PoseLabClass ui;
 };

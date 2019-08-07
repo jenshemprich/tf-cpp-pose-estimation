@@ -2,8 +2,8 @@
 
 #include "opencv2/opencv.hpp"
 
-#include "PoseEstimation/AffineTransform.h"
-#include "PoseEstimation/CocoDataModel.h"
+#include "AffineTransform.h"
+#include "CocoDataModel.h"
 
 namespace coco {
 

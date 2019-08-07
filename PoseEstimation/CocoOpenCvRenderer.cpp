@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "CocoOpenCvRenderer.h"
 
 namespace coco {

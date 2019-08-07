@@ -7,6 +7,12 @@
 using namespace cv;
 using namespace std;
 
+AffineTransform AffineTransform::identity;
+
+AffineTransform::AffineTransform()
+	: transform(Mat::eye(2, 2, CV_32F))
+{}
+
 AffineTransform::AffineTransform(const PointTriple& from, const PointTriple& to) : transform(getAffineTransform(from.points, to.points))
 {}
 

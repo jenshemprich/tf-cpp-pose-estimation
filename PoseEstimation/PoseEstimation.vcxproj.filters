@@ -42,6 +42,9 @@
     <ClInclude Include="CocoDataModel.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="CocoOpenCvRenderer.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -69,6 +72,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="CocoDataModel.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="CocoOpenCvRenderer.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

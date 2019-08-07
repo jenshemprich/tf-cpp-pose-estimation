@@ -14,12 +14,12 @@
 
 #include "PoseEstimation/AffineTransform.h"
 #include "PoseEstimation/CocoDataModel.h"
+#include "PoseEstimation/CocoOpenCvRenderer.h"
 #include "PoseEstimation/FramesPerSecond.h"
 #include "PoseEstimation/GeometryOperators.h"
 #include "PoseEstimation/PoseEstimator.h"
 #include "PoseEstimation/TensorMat.h"
 
-#include "CocoOpenCvRenderer.h"
 #include "PoseEstimationSimpleApp.h"
 
 

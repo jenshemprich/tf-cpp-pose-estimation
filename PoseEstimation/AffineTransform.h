@@ -7,7 +7,9 @@ public:
 		const cv::Point2f points[3];
 	};
 
-	AffineTransform() {};
+	static AffineTransform identity;
+
+	AffineTransform();
 
 	AffineTransform(const PointTriple& from, const PointTriple& to);
 	AffineTransform(const cv::Rect2f & from, const cv::Rect2f & to);

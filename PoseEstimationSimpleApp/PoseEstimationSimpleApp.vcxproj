@@ -31,11 +31,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CocoOpenCvRenderer.cpp" />
     <ClCompile Include="PoseEstimationSimpleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CocoOpenCvRenderer.h" />
     <ClInclude Include="PoseEstimationSimpleApp.h" />
   </ItemGroup>
   <ItemGroup>
