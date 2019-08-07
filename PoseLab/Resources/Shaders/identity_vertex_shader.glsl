@@ -7,5 +7,5 @@ void main(void)
 {
     // COPY THE VERTEX COORDINATE TO THE GL POSITION
     gl_Position = qt_vertex;
-    qt_coordinate = (vec2(qt_vertex.x, qt_vertex.y) + 1.0)/2.0;
+    qt_coordinate = (vec2(qt_vertex.x, -qt_vertex.y) + 1.0)/2.0;
 }
