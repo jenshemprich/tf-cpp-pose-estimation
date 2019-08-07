@@ -118,6 +118,8 @@ void OpenGlVideoView::initializeGL() {
 void OpenGlVideoView::setFrame(const QVideoFrame& frame) {
 	QVideoFrame localFrame = frame;
 	if (localFrame.map(QAbstractVideoBuffer::ReadOnly)) {
+		emit frameArrived(localFrame);
+
 		makeCurrent();
 
 		// SEE IF WE NEED A NEW TEXTURE TO HOLD THE INCOMING VIDEO FRAME

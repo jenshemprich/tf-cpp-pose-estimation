@@ -38,9 +38,8 @@ public:
 	void setFrame(const QVideoFrame& frame);
 	//void setFrame(QImage frame);
 
-
-	bool hasHeightForWidth() const override;
-	int heightForWidth(int width) const override;
+signals:
+	void frameArrived(QVideoFrame& frame);
 
 protected:
 	void initializeGL();
@@ -55,5 +54,7 @@ protected:
 	int localWidth, localHeight;
 	qreal devicePixelRatio;
 
+	bool hasHeightForWidth() const override;
+	int heightForWidth(int width) const override;
 	int videoWidth, videoHeight;
 };
