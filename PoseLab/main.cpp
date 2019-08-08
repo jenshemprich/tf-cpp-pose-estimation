@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include <algorithm>
+
 #include <QtWidgets/QApplication>
 #include <QCamera>
 #include <qfile.h>
@@ -7,6 +9,7 @@
 #include <QCameraInfo>
 #include <QMediaPlayer>
 
+#include "MediaWorker.h"
 #include "PoseLab.h"
 
 using namespace std;
@@ -57,20 +60,6 @@ void show(unique_ptr<QCamera>& camera, QAbstractVideoSurface* surface) {
 	camera->setCaptureMode(QCamera::CaptureVideo);
 
 	// Must create new object and set that in order to apply settings
-	//QCameraViewfinderSettings settings(camera->viewfinderSettings());
-	//settings.setResolution(640, 480);
-	//settings.setMinimumFrameRate(15); // Wrong values are fatal
-	//settings.setMaximumFrameRate(15); // Wrong values are fatal
-	//camera->setViewfinderSettings(settings);
-
-	camera->setViewfinder(surface);
-	camera->start();
-}
-
-void show(unique_ptr<QCamera>& camera, QVideoWidget* surface) {
-	camera->setCaptureMode(QCamera::CaptureVideo);
-
-	// Must create new object and set that in order to apply settings
 	QCameraViewfinderSettings settings(camera->viewfinderSettings());
 	settings.setResolution(640, 480);
 	settings.setMinimumFrameRate(15); // Wrong values are fatal
@@ -81,10 +70,10 @@ void show(unique_ptr<QCamera>& camera, QVideoWidget* surface) {
 	camera->start();
 }
 
+
 unique_ptr<QMediaPlayer> mediaPlayer(const char* path) {
 	QMediaPlayer* player = new QMediaPlayer();
 	QUrl url = QUrl::fromLocalFile(path);
-	qDebug() << url;
 	player->setMedia(url);
 
 	return unique_ptr<QMediaPlayer>(player);
@@ -110,7 +99,7 @@ int main(int argc, char* argv[]) {
 		QString iconResource = ":Resources/Devices/" + description + ".png";
 		if (!QFile::exists(iconResource)) {
 			iconResource = ":Resources/Devices/camera_lens.png";
-		} 
+		}
 
 		if (description.indexOf("Microsoft ") == 0) {
 			description = description.mid(10);
@@ -128,12 +117,32 @@ int main(int argc, char* argv[]) {
 	poseLab.cameras->setFixedWidth(96);
 	poseLab.movies->setFixedWidth(96);
 
-	//unique_ptr<QCamera> cam = camera();
-	//show(cam, poseLab.video->surface);
 
-	//unique_ptr<QMediaPlayer> player1 = mediaPlayer("../testdata/Yoga Morning Fresh  _  Yoga With Adriene 360p.mp4");
+	//unique_ptr<QThread> worker(QThread::create([&poseLab]() {
+	//	unique_ptr<QCamera> cam = camera();
+	//	cam->moveToThread(QThread::currentThread());
+	//	show(cam, poseLab.video->surface);
+	//	while (!QThread::currentThread()->isInterruptionRequested()) {
+	//		QCoreApplication::processEvents();
+	//	}
+	//}));
+	//worker->start();
+
+	//// TODO Camera must be created inside thread - moveToThread isn't sufficient
+	//unique_ptr<QCamera> cam = camera();
+	//MediaWorker mediaWorker([&poseLab, &cam]() {
+	//	cam->moveToThread(QThread::currentThread());
+	//	show(cam, poseLab.video->surface);
+	//});
+	//mediaWorker.start();
+
 	unique_ptr<QMediaPlayer> player1 = mediaPlayer("../testdata/Handstand_240p.3gp");
-	show(player1, poseLab.video->surface);
+	MediaWorker mediaWorker([&poseLab, &player1]() {
+		player1->moveToThread(QThread::currentThread());
+		show(player1, poseLab.video->surface);
+	});
+	mediaWorker.start();
+
 
 	// https://forum.qt.io/topic/89856/switch-qmultimedia-backend-without-recompiling-whole-qt/2
 	// -> install https://github.com/Nevcairiel/LAVFilters/releases or Haali Media Splitter
@@ -141,5 +150,13 @@ int main(int argc, char* argv[]) {
 	// wmf backend doesn't play avi, and won't enum cameras
 	// TODO webm 3fp plays good -> convert samples  or use OpenCV
 
-	return a.exec();
+	int result = a.exec();
+
+	//worker->requestInterruption();
+	//worker->quit();
+	//worker->wait();
+
+	mediaWorker.end();
+
+	return result;
 }

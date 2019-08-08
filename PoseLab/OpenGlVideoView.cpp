@@ -3,37 +3,22 @@
 #include <QDesktopwidget>
 #include <QScreen>
 
+#include "OpenGlVideoSurface.h"
 #include "OpenGlVideoView.h"
 
-OpenGlVideoView::OpenGlVideoView(QWidget *parent)
-	: QOpenGLWidget(parent) 
-	, surface(new VideoSurface(this))
+OpenGlVideoView::OpenGlVideoView(QWidget* parent)
+	: QOpenGLWidget(parent)
+	, surface(new OpenGlVideoSurface(this))
 	, videoTexture(nullptr)
 	, videoWidth(640), videoHeight(360)
-{}
+{
+	// TODO Would block if same thread 
+	connect(surface, &OpenGlVideoSurface::aboutToPresent, this, &OpenGlVideoView::setFrame, Qt::ConnectionType::BlockingQueuedConnection);
+}
 
 OpenGlVideoView::~OpenGlVideoView()
 {
 	delete surface;
-}
-
-OpenGlVideoView::VideoSurface::VideoSurface(OpenGlVideoView* display) 
-	: display(display)
-{}
-
-QList<QVideoFrame::PixelFormat> OpenGlVideoView::VideoSurface::supportedPixelFormats(QAbstractVideoBuffer::HandleType type) const {
-	if (type == QAbstractVideoBuffer::NoHandle) {
-		// TODO Camera provides RGBA but RGB is more than sufficient
-		return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_RGB32;
-	}
-	else {
-		return QList<QVideoFrame::PixelFormat>();
-	}
-}
-
-bool OpenGlVideoView::VideoSurface::present(const QVideoFrame& frame) {
-	display->setFrame(frame);
-	return true;
 }
 
 
@@ -115,51 +100,45 @@ void OpenGlVideoView::initializeGL() {
 	setlocale(LC_ALL, "");
 }
 
-void OpenGlVideoView::setFrame(const QVideoFrame& frame) {
-	QVideoFrame localFrame = frame;
-	if (localFrame.map(QAbstractVideoBuffer::ReadOnly)) {
-		emit frameArrived(localFrame);
+void OpenGlVideoView::setFrame(QVideoFrame& frame) {
+	makeCurrent();
 
-		makeCurrent();
+	// SEE IF WE NEED A NEW TEXTURE TO HOLD THE INCOMING VIDEO FRAME
+	if (!videoTexture ||
+		videoTexture->width() != frame.width() ||
+		videoTexture->height() != frame.height()) {
 
-		// SEE IF WE NEED A NEW TEXTURE TO HOLD THE INCOMING VIDEO FRAME
-		if (!videoTexture ||
-			videoTexture->width() != localFrame.width() ||
-			videoTexture->height() != localFrame.height()) {
-
-			if (videoTexture) {
-				delete videoTexture;
-			}
-
-			// CREATE THE GPU SIDE TEXTURE BUFFER TO HOLD THE INCOMING VIDEO
-			videoTexture = new QOpenGLTexture(QOpenGLTexture::Target2D);
-			videoTexture->setSize(localFrame.width(), localFrame.height());
-			videoTexture->setFormat(QOpenGLTexture::RGBA32F);
-			videoTexture->setWrapMode(QOpenGLTexture::ClampToBorder);
-			videoTexture->setMinificationFilter(QOpenGLTexture::Nearest);
-			videoTexture->setMagnificationFilter(QOpenGLTexture::Nearest);
-			videoTexture->allocateStorage();
+		if (videoTexture) {
+			delete videoTexture;
 		}
 
-		// UPLOAD THE CPU BUFFER TO THE GPU TEXTURE
-		// COPY FRAME BUFFER TEXTURE FROM GPU TO LOCAL CPU BUFFER
-		QVideoFrame::PixelFormat format = localFrame.pixelFormat();
-		// if (format == QVideoFrame::Format_ARGB32) {
-		if (format == QVideoFrame::Format_RGB32) {
-				unsigned int bytesPerSample = localFrame.bytesPerLine() / localFrame.width() / 4;
-			if (bytesPerSample == sizeof(unsigned char)) {
-				videoTexture->setData(QOpenGLTexture::BGRA, QOpenGLTexture::UInt8,
-					(const void*)localFrame.bits());
-			}
-		}
-		localFrame.unmap();
-
-		videoWidth = frame.width();
-		videoHeight = frame.height();
-		setMinimumSize(videoWidth, videoHeight);
-
-		update();
+		// CREATE THE GPU SIDE TEXTURE BUFFER TO HOLD THE INCOMING VIDEO
+		videoTexture = new QOpenGLTexture(QOpenGLTexture::Target2D);
+		videoTexture->setSize(frame.width(), frame.height());
+		videoTexture->setFormat(QOpenGLTexture::RGBA32F);
+		videoTexture->setWrapMode(QOpenGLTexture::ClampToBorder);
+		videoTexture->setMinificationFilter(QOpenGLTexture::Nearest);
+		videoTexture->setMagnificationFilter(QOpenGLTexture::Nearest);
+		videoTexture->allocateStorage();
 	}
+
+	// UPLOAD THE CPU BUFFER TO THE GPU TEXTURE
+	// COPY FRAME BUFFER TEXTURE FROM GPU TO LOCAL CPU BUFFER
+	QVideoFrame::PixelFormat format = frame.pixelFormat();
+	// if (format == QVideoFrame::Format_ARGB32) {
+	if (format == QVideoFrame::Format_RGB32) {
+			unsigned int bytesPerSample = frame.bytesPerLine() / frame.width() / 4;
+		if (bytesPerSample == sizeof(unsigned char)) {
+			videoTexture->setData(QOpenGLTexture::BGRA, QOpenGLTexture::UInt8,
+				(const void*) frame.bits());
+		}
+	}
+
+	videoWidth = frame.width();
+	videoHeight = frame.height();
+	setMinimumSize(videoWidth, videoHeight);
+
+	update();
 }
 
 void OpenGlVideoView::resizeGL(int w, int h) {

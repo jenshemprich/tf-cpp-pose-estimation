@@ -9,6 +9,8 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
+class OpenGlVideoSurface;
+
 class OpenGlVideoView : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT
@@ -17,29 +19,19 @@ public:
 	OpenGlVideoView(QWidget *parent);
 	~OpenGlVideoView();
 
-	class VideoSurface : public QAbstractVideoSurface {
-	public:
-		VideoSurface(OpenGlVideoView* display);
-		// Inherited via QAbstractVideoSurface
-		virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType type = QAbstractVideoBuffer::NoHandle) const override;
-		virtual bool present(const QVideoFrame& frame) override;
-	private: 
-		OpenGlVideoView* display;
-	}  * surface;
+	OpenGlVideoSurface* surface;
 
-	virtual bool isValid() const {
-		return (wasInitialized());
-	}
+virtual bool isValid() const {
+	return (wasInitialized());
+}
 
-	bool wasInitialized() const {
-		return (vertexArrayObject.isCreated());
-	}
+bool wasInitialized() const {
+	return (vertexArrayObject.isCreated());
+}
 
-	void setFrame(const QVideoFrame& frame);
+protected slots:
+	void setFrame(QVideoFrame& frame);
 	//void setFrame(QImage frame);
-
-signals:
-	void frameArrived(QVideoFrame& frame);
 
 protected:
 	void initializeGL();

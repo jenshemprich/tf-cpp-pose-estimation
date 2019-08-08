@@ -3,10 +3,12 @@
 #include <QVideoWidget>
 #include <QResizeEVent>
 #include <QSizePolicy>
+#include <QThread>
 
 #include <PoseEstimation/CocoOpenCVRenderer.h>
 
 #include "PoseLab.h"
+#include "VideoFrameProcessor.h"
 
 using namespace cv;
 using namespace std;
@@ -16,6 +18,20 @@ PoseLab::PoseLab(QWidget *parent)
 	, video(nullptr)
 	, pose_estimator(unique_ptr<PoseEstimator>(new PoseEstimator("models/graph/mobilenet_thin/graph_opt.pb")))
 	, input(TensorMat::AutoResize, cv::Size(0, 0))
+	, worker()
+	, inference([this](QVideoFrame& frame) {
+		// TODO convert directly to CV_32FC3 in TensorMat
+		cv::Mat  frameRef(frame.height(), frame.width(), CV_8UC4, frame.bits(), frame.bytesPerLine());
+		cv::Mat  image;
+		cv::cvtColor(frameRef, image, cv::COLOR_BGRA2BGR);
+
+		input.copyFrom(image);
+		vector<coco::Human> humans = pose_estimator->inference(input.tensor, 4);
+		coco::OpenCvRenderer(frameRef, 
+			AffineTransform::identity,
+			AffineTransform(Rect2f(0.0, 0.0, 1.0, 1.0), Rect(Point(0, 0), frameRef.size()))
+		).draw(humans);
+	})
 {
 	ui.setupUi(this);
 	centralWidget()->setLayout(ui.gridLayout);
@@ -25,8 +41,10 @@ PoseLab::PoseLab(QWidget *parent)
 	pose_estimator->loadModel();
 	pose_estimator->setGaussKernelSize(25);
 
-	connect(video, &OpenGlVideoView::frameArrived, this, &PoseLab::inference);
-
+	worker.setPriority(QThread::Priority::LowestPriority);
+	worker.start();
+	worker.connect(video->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
+	inference.moveToThread(&worker);
 
 	cameras = ui.cameras;
 	movies = ui.movies;
@@ -43,17 +61,7 @@ PoseLab::PoseLab(QWidget *parent)
 	ui.overlayTest->setStyleSheet("background-color: rgba(255,0,0,0%)");
 }
 
-void PoseLab::inference(QVideoFrame& frame) {
-	// TODO convert directly to CV_32FC3 in TensorMat
-	cv::Mat  frameRef(frame.height(), frame.width(), CV_8UC4, frame.bits(), frame.bytesPerLine());
-	cv::Mat  image;
-	cv::cvtColor(frameRef, image, cv::COLOR_BGRA2BGR);
-
-	input.copyFrom(image);
-	vector<coco::Human> humans = pose_estimator->inference(input.tensor, 4);
-
-	const Rect roi = Rect(Point(0,0), frameRef.size());
-	AffineTransform view(Rect2f(0.0, 0.0, 1.0, 1.0), roi);
-
-	coco::OpenCvRenderer(frameRef, AffineTransform::identity, view).draw(humans);
+PoseLab::~PoseLab() {
+	worker.quit();
+	worker.wait();
 }
