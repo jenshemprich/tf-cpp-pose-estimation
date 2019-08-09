@@ -5,6 +5,8 @@
 class VideoFrameProcessor : public QObject {
 	Q_OBJECT
 public:
+	typedef std::function<void(QVideoFrame&)> Function;
+
 	VideoFrameProcessor(const Function&& function);
 
 public slots:
