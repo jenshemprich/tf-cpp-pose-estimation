@@ -60,9 +60,15 @@
     <ClCompile Include="MediaWorker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VideoFrameSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoFrameSource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

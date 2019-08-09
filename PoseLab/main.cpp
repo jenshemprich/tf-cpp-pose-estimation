@@ -87,6 +87,9 @@ void show(unique_ptr< QMediaPlayer >& player, QAbstractVideoSurface* surface) {
 
 int main(int argc, char* argv[]) {
 	QApplication a(argc, argv);
+	// TODO font size propagation doesn't work in qDarkStyle
+	// - when set all widget take some kind of defaul font size 
+	// + with the default size, all widgets inherit the font size of the QMainWindow (PoseLabClass)
 	setStyle(":qdarkstyle/style.qss");
 
 	PoseLab poseLab;
@@ -136,13 +139,6 @@ int main(int argc, char* argv[]) {
 	//});
 	//mediaWorker.start();
 
-	unique_ptr<QMediaPlayer> player1 = mediaPlayer("../testdata/Handstand_240p.3gp");
-	MediaWorker mediaWorker([&poseLab, &player1]() {
-		player1->moveToThread(QThread::currentThread());
-		show(player1, poseLab.video->surface);
-	});
-	mediaWorker.start();
-
 
 	// https://forum.qt.io/topic/89856/switch-qmultimedia-backend-without-recompiling-whole-qt/2
 	// -> install https://github.com/Nevcairiel/LAVFilters/releases or Haali Media Splitter
@@ -155,8 +151,6 @@ int main(int argc, char* argv[]) {
 	//worker->requestInterruption();
 	//worker->quit();
 	//worker->wait();
-
-	mediaWorker.end();
 
 	return result;
 }
