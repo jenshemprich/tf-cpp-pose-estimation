@@ -1,6 +1,10 @@
 #include "pch.h"
 
+#include <opencv2/opencv.hpp>
+
 #include "OpenGlVideoSurface.h"
+
+using namespace cv;
 
 OpenGlVideoSurface::OpenGlVideoSurface(OpenGlVideoView* display)
 	: view(display)
@@ -19,6 +23,14 @@ QList<QVideoFrame::PixelFormat> OpenGlVideoSurface::supportedPixelFormats(QAbstr
 bool OpenGlVideoSurface::present(const QVideoFrame& frame) {
 	QVideoFrame localFrame = frame;
 	if (localFrame.map(QAbstractVideoBuffer::ReadOnly)) {
+		if (format.scanLineDirection() == QVideoSurfaceFormat::Direction::BottomToTop) {
+			// TODO forward video surface format and vflip in video processor and OpenGL view
+			Mat frameRef(localFrame.height(), localFrame.width(), CV_8UC4, localFrame.bits(), localFrame.bytesPerLine());
+			Mat tmp;
+			flip(frameRef, tmp, 0);
+			tmp.copyTo(frameRef);
+		}
+
 		emit frameArrived(localFrame);
 		emit aboutToPresent(localFrame);
 		localFrame.unmap();
@@ -27,5 +39,14 @@ bool OpenGlVideoSurface::present(const QVideoFrame& frame) {
 	else {
 		return false;
 	}
+}
+
+bool OpenGlVideoSurface::start(const QVideoSurfaceFormat& surfaceFormat) {
+	format = surfaceFormat;
+	return true;
+}
+
+void OpenGlVideoSurface::stop()
+{
 }
 
