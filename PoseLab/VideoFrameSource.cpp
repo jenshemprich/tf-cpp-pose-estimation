@@ -12,18 +12,18 @@ VideoFrameSource::VideoFrameSource(QObject* parent)
 	worker.start();
 	moveToThread(&worker);
 	connect(this, &VideoFrameSource::start_, this, &VideoFrameSource::startWork);
-	connect(this, &VideoFrameSource::end_, this, &VideoFrameSource::endWork, Qt::ConnectionType::BlockingQueuedConnection);
+	connect(this, &VideoFrameSource::end_, this, &VideoFrameSource::endWork);
 }
 
 VideoFrameSource::~VideoFrameSource() {
 	end();
-	worker.quit();
-	worker.exit();
-	// TODO Blocks although quit() has been called
-	// worker.wait();
 
-	// MediaPlayer must be deleted in worker thread
-	assert(mediaPlayer == nullptr);
+	while (mediaPlayer.get() != nullptr) {
+		QCoreApplication::processEvents();
+	}
+
+	worker.quit();
+	worker.wait();
 }
 
 void VideoFrameSource::setPath(const QString& path) {
@@ -39,8 +39,6 @@ void VideoFrameSource::start() {
 }
 
 void VideoFrameSource::end() {
-	// TODO blocks when called from within event becasue (works when called elsewhere)
-	// - queued connections aren't processed anymore
 	emit end_();
 }
 

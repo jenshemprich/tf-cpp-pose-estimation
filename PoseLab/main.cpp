@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 	// TODO font size propagation doesn't work in qDarkStyle
 	// - when set all widget take some kind of defaul font size 
 	// + with the default size, all widgets inherit the font size of the QMainWindow (PoseLabClass)
-	setStyle(":qdarkstyle/style.qss");
+	//setStyle(":qdarkstyle/style.qss");
 
 	PoseLab poseLab;
 	poseLab.show();
