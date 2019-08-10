@@ -30,18 +30,21 @@ PoseLab::PoseLab(QWidget *parent)
 	, input(TensorMat::AutoResize, cv::Size(0, 0))
 	, worker()
 	, inference([this](QVideoFrame& frame) {
+		input.resize(cv::Size(frame.width() / inferencePxResizeFactor, frame.height() / inferencePxResizeFactor));
 		// TODO convert directly to CV_32FC3 in TensorMat
 		Mat frameRef(frame.height(), frame.width(), CV_8UC4, frame.bits(), frame.bytesPerLine());
 		cv::Mat  image;
 		cv::cvtColor(frameRef, image, cv::COLOR_BGRA2BGR);
 
 		input.copyFrom(image);
-		vector<coco::Human> humans = pose_estimator->inference(input.tensor, 4);
+		vector<coco::Human> humans = pose_estimator->inference(input.tensor, inferenceUpscaleFactor);
 		coco::OpenCvRenderer(frameRef, 
 			AffineTransform::identity,
 			AffineTransform(Rect2f(0.0, 0.0, 1.0, 1.0), Rect(Point(0, 0), frameRef.size()))
 		).draw(humans);
 	})
+	, inferencePxResizeFactor(1)
+	, inferenceUpscaleFactor(4)
 	, inferenceResolutionGroup(this)
 	, inferenceUpscalenGroup(this)
 	, videoFrameSource(nullptr)
@@ -77,10 +80,22 @@ PoseLab::PoseLab(QWidget *parent)
 	inferenceResolutionGroup.addButton(ui.px4);
 	inferenceResolutionGroup.addButton(ui.px8);
 
+	// TODO select check button with default value (px1) - derive from tensor mat
+	connect(ui.px1, &QToolButton::clicked, this, &PoseLab::px1);
+	connect(ui.px2, &QToolButton::clicked, this, &PoseLab::px2);
+	connect(ui.px4, &QToolButton::clicked, this, &PoseLab::px4);
+	connect(ui.px8, &QToolButton::clicked, this, &PoseLab::px8);
+
 	inferenceUpscalenGroup.addButton(ui.u1);
 	inferenceUpscalenGroup.addButton(ui.u2);
 	inferenceUpscalenGroup.addButton(ui.u4);
 	inferenceUpscalenGroup.addButton(ui.u8);
+
+	// TODO select check button with default value (u4) - derive from field
+	connect(ui.u1, &QToolButton::clicked, this, &PoseLab::u1);
+	connect(ui.u2, &QToolButton::clicked, this, &PoseLab::u2);
+	connect(ui.u4, &QToolButton::clicked, this, &PoseLab::u4);
+	connect(ui.u8, &QToolButton::clicked, this, &PoseLab::u8);
 
 
 	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
@@ -127,8 +142,6 @@ PoseLab::PoseLab(QWidget *parent)
 	}
 
 	connect(ui.gaussKernelSize, qOverload<int>(&QSpinBox::valueChanged), this, &PoseLab::setGaussKernelSize);
-
-
 
 	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
@@ -187,12 +200,30 @@ void PoseLab::showSource(VideoFrameSource* source) {
 	if (videoFrameSource.get() != nullptr) {
 		videoFrameSource->end();
 	}
-	videoFrameSource = unique_ptr<VideoFrameSource>(source);
 
+	videoFrameSource = unique_ptr<VideoFrameSource>(source);
 	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
 	videoFrameSource->setTarget(video->surface);
 	videoFrameSource->start();
 }
+
+void PoseLab::px(int factor) {
+	inferencePxResizeFactor = factor;
+}
+
+void PoseLab::px1() { px(1); }
+void PoseLab::px2() { px(2); }
+void PoseLab::px4() { px(4); }
+void PoseLab::px8() { px(8); }
+
+void PoseLab::u(int factor) {
+	inferenceUpscaleFactor = factor;
+}
+
+void PoseLab::u1() { u(1); }
+void PoseLab::u2() { u(2); }
+void PoseLab::u4() { u(4); }
+void PoseLab::u8() { u(8); }
 
 void PoseLab::setGaussKernelSize(int newSize) {
 	pose_estimator->setGaussKernelSize(newSize);

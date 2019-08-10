@@ -43,15 +43,31 @@ public slots:
 	void selectMovieFolder();
 	void showMovieFolder(const QString& folder);
 	void showSource(VideoFrameSource* videoFrameSource);
+
+	void px1();
+	void px2();
+	void px4();
+	void px8();
+
+	void u1();
+	void u2();
+	void u4();
+	void u8();
+
 	void setGaussKernelSize(int newSize);
 
 protected:
 	void closeEvent(QCloseEvent* event) override;
 
+	void px(int factor);
+	void u(int factor);
+
 	std::unique_ptr<PoseEstimator> pose_estimator;
 	TensorMat input;
 	QThread worker;
 	VideoFrameProcessor inference;
+	int inferencePxResizeFactor;
+	int inferenceUpscaleFactor;
 
 private:
 	Ui::PoseLabClass ui;
