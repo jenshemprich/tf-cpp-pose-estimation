@@ -25,7 +25,6 @@ using namespace std;
 
 PoseLab::PoseLab(QWidget *parent)
 	: QMainWindow(parent)
-	, video(nullptr)
 	, pose_estimator(unique_ptr<PoseEstimator>(new PoseEstimator("models/graph/mobilenet_thin/graph_opt.pb")))
 	, input(TensorMat::AutoResize, cv::Size(0, 0))
 	, worker()
@@ -52,28 +51,18 @@ PoseLab::PoseLab(QWidget *parent)
 	ui.setupUi(this);
 	centralWidget()->setLayout(ui.gridLayout);
 
-	video = ui.openGLvideo;
-
 	pose_estimator->loadModel();
 	pose_estimator->setGaussKernelSize(25);
-
 	worker.setPriority(QThread::Priority::LowestPriority);
 	worker.start();
-	worker.connect(video->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
+	worker.connect(ui.openGLvideo->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
 	inference.moveToThread(&worker);
-
 
 	// TODO Move to OpenGLVideo constructor, but doesn't have any effect there
 	QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	policy.setHeightForWidth(true);
 	policy.setWidthForHeight(true);
-	video->setSizePolicy(policy);
-
-	//videoFrameSource->setPath("../testdata/Handstand_240p.3gp");
-	//videoFrameSource->setTarget(video->surface);
-	//videoFrameSource->start();
-	//connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
-
+	ui.openGLvideo->setSizePolicy(policy);
 
 	inferenceResolutionGroup.addButton(ui.px1);
 	inferenceResolutionGroup.addButton(ui.px2);
@@ -97,6 +86,7 @@ PoseLab::PoseLab(QWidget *parent)
 	connect(ui.u4, &QToolButton::clicked, this, &PoseLab::u4);
 	connect(ui.u8, &QToolButton::clicked, this, &PoseLab::u8);
 
+	connect(ui.gaussKernelSize, qOverload<int>(&QSpinBox::valueChanged), this, &PoseLab::setGaussKernelSize);
 
 	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
 	foreach(const QCameraInfo & cameraInfo, cameras) {
@@ -112,7 +102,6 @@ PoseLab::PoseLab(QWidget *parent)
 		}
 		if (description.indexOf("Camera ") == 0) {
 			description = description.mid(7);
-		
 		}
 
 		QListWidgetItem* item = new QListWidgetItem(icon, description, ui.cameras);
@@ -120,16 +109,13 @@ PoseLab::PoseLab(QWidget *parent)
 	}
 	ui.cameras->setVisible(cameras.size() > 0);
 	ui.cameras->setViewMode(cameras.size() == 1 ? QListView::ViewMode::IconMode : QListView::ViewMode::IconMode);
-
 	// TODO replace hardcoded size hack with automatic layout
 	ui.cameras->setFixedWidth(96);
 	ui.cameras->setFixedHeight((
 		ui.cameras->iconSize().height() +
 		(cameras.size() > 1 ? ui.cameras->fontInfo().pixelSize() : 0) +
 		12 + 2) * cameras.size());
-
 	connect(ui.cameras, &QListWidget::currentItemChanged, this, &PoseLab::currentCameraChanged);
-
 
 	connect(ui.openMovieFolder, &QPushButton::pressed, this, &PoseLab::selectMovieFolder);
 	connect(ui.movies, &QListWidget::currentItemChanged, this, &PoseLab::currentMovieChanged);
@@ -140,8 +126,6 @@ PoseLab::PoseLab(QWidget *parent)
 	if (QFile::exists("../testdata")) {
 		showMovieFolder("../testdata");
 	}
-
-	connect(ui.gaussKernelSize, qOverload<int>(&QSpinBox::valueChanged), this, &PoseLab::setGaussKernelSize);
 
 	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
@@ -203,7 +187,7 @@ void PoseLab::showSource(VideoFrameSource* source) {
 
 	videoFrameSource = unique_ptr<VideoFrameSource>(source);
 	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
-	videoFrameSource->setTarget(video->surface);
+	videoFrameSource->setTarget(ui.openGLvideo->surface);
 	videoFrameSource->start();
 }
 

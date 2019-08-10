@@ -27,8 +27,6 @@ public:
 	PoseLab(QWidget* parent = Q_NULLPTR);
 	virtual ~PoseLab();
 
-	OpenGlVideoView* video;
-
 	QButtonGroup inferenceResolutionGroup;
 	QButtonGroup inferenceUpscalenGroup;
 
