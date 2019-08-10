@@ -4,6 +4,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <QFile>
 #include <QThread>
 #include <QButtonGroup>
 
@@ -27,8 +28,6 @@ public:
 	virtual ~PoseLab();
 
 	OpenGlVideoView* video;
-	QListWidget* cameras;
-	QListWidget* movies;
 
 	QButtonGroup inferenceResolutionGroup;
 	QButtonGroup inferenceUpscalenGroup;
@@ -37,6 +36,14 @@ public:
 
 signals:
 	void aboutToClose();
+
+public slots:
+	void currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous);
+	void currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous);
+	void selectMovieFolder();
+	void showMovieFolder(const QString& folder);
+	void showSource(VideoFrameSource* videoFrameSource);
+	void setGaussKernelSize(int newSize);
 
 protected:
 	void closeEvent(QCloseEvent* event) override;

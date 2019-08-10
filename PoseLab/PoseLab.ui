@@ -32,8 +32,11 @@
      <property name="sizeConstraint">
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item row="1" column="4">
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="toolBar">
        <item>
         <widget class="QLabel" name="px">
          <property name="text">
@@ -168,6 +171,9 @@
        </item>
        <item>
         <widget class="QSpinBox" name="gaussKernelSize">
+         <property name="readOnly">
+          <bool>false</bool>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -189,28 +195,37 @@
        <property name="sizeConstraint">
         <enum>QLayout::SetNoConstraint</enum>
        </property>
-       <item row="2" column="1">
-        <spacer name="verticalSpacerBottom">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item row="0" column="1">
         <spacer name="verticalSpacerTop">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
+        <spacer name="Left">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>20</height>
           </size>
          </property>
         </spacer>
@@ -226,8 +241,8 @@
          <widget class="QLabel" name="overlayTest">
           <property name="geometry">
            <rect>
-            <x>-31</x>
-            <y>-11</y>
+            <x>40</x>
+            <y>30</y>
             <width>331</width>
             <height>311</height>
            </rect>
@@ -258,9 +273,9 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>0</y>
-            <width>70</width>
-            <height>16</height>
+            <y>30</y>
+            <width>121</width>
+            <height>31</height>
            </rect>
           </property>
           <property name="text">
@@ -269,23 +284,23 @@
          </widget>
         </widget>
        </item>
-       <item row="0" column="0">
-        <spacer name="Left">
+       <item row="2" column="1">
+        <spacer name="verticalSpacerBottom">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
+          <enum>QSizePolicy::MinimumExpanding</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>20</height>
+           <width>20</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item row="0" column="2">
+       <item row="1" column="2">
         <spacer name="Right">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -295,7 +310,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>0</width>
            <height>20</height>
           </size>
          </property>
@@ -308,9 +323,9 @@
        <item>
         <widget class="QListWidget" name="cameras">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
-           <verstretch>1</verstretch>
+           <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="baseSize">
@@ -368,7 +383,7 @@
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
            <horstretch>0</horstretch>
-           <verstretch>1</verstretch>
+           <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="baseSize">
@@ -377,8 +392,14 @@
            <height>0</height>
           </size>
          </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustIgnored</enum>
          </property>
          <property name="iconSize">
           <size>
@@ -395,14 +416,39 @@
          <property name="resizeMode">
           <enum>QListView::Fixed</enum>
          </property>
+         <property name="viewMode">
+          <enum>QListView::IconMode</enum>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="openMovieFolder">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Segoe UI</family>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Select..</string>
+         </property>
         </widget>
        </item>
       </layout>
      </item>
      <item row="1" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <layout class="QHBoxLayout" name="home">
        <item>
-        <widget class="QToolButton" name="settings">
+        <widget class="QToolButton" name="showSettings">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>1</horstretch>
@@ -431,7 +477,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer">
+        <spacer name="top">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

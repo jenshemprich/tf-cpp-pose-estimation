@@ -5,6 +5,16 @@
 #include <QSizePolicy>
 #include <QThread>
 #include <QButtonGroup>
+#include <QCameraInfo>
+#include <QListWidget>
+#include <QPushButton>
+#include <QFile>
+#include <QFileDialog>
+#include <QMimeDatabase>
+#include <QMimeType>
+#include <QFileIconProvider>
+#include <QScroller>
+#include <QSpinBox>
 
 #include <PoseEstimation/CocoOpenCVRenderer.h>
 
@@ -34,7 +44,7 @@ PoseLab::PoseLab(QWidget *parent)
 	})
 	, inferenceResolutionGroup(this)
 	, inferenceUpscalenGroup(this)
-	, videoFrameSource(new VideoFrameSource(nullptr))
+	, videoFrameSource(nullptr)
 {
 	ui.setupUi(this);
 	centralWidget()->setLayout(ui.gridLayout);
@@ -49,8 +59,6 @@ PoseLab::PoseLab(QWidget *parent)
 	worker.connect(video->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
 	inference.moveToThread(&worker);
 
-	cameras = ui.cameras;
-	movies = ui.movies;
 
 	// TODO Move to OpenGLVideo constructor, but doesn't have any effect there
 	QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -58,10 +66,11 @@ PoseLab::PoseLab(QWidget *parent)
 	policy.setWidthForHeight(true);
 	video->setSizePolicy(policy);
 
-	videoFrameSource->setPath("../testdata/Handstand_240p.3gp");
-	videoFrameSource->setTarget(video->surface);
-	videoFrameSource->start();
-	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
+	//videoFrameSource->setPath("../testdata/Handstand_240p.3gp");
+	//videoFrameSource->setTarget(video->surface);
+	//videoFrameSource->start();
+	//connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
+
 
 	inferenceResolutionGroup.addButton(ui.px1);
 	inferenceResolutionGroup.addButton(ui.px2);
@@ -72,6 +81,54 @@ PoseLab::PoseLab(QWidget *parent)
 	inferenceUpscalenGroup.addButton(ui.u2);
 	inferenceUpscalenGroup.addButton(ui.u4);
 	inferenceUpscalenGroup.addButton(ui.u8);
+
+
+	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+	foreach(const QCameraInfo & cameraInfo, cameras) {
+		QString description = cameraInfo.description();
+
+		QIcon icon; // = ":Resources/Devices/" + description + ".png";
+		if (icon.isNull()) {
+			icon = QIcon(":Resources/Devices/webcam.png");
+		}
+
+		if (description.indexOf("Microsoft ") == 0) {
+			description = description.mid(10);
+		}
+		if (description.indexOf("Camera ") == 0) {
+			description = description.mid(7);
+		
+		}
+
+		QListWidgetItem* item = new QListWidgetItem(icon, description, ui.cameras);
+		item->setData(Qt::UserRole, QVariant(cameraInfo.deviceName()));
+	}
+	ui.cameras->setVisible(cameras.size() > 0);
+	ui.cameras->setViewMode(cameras.size() == 1 ? QListView::ViewMode::IconMode : QListView::ViewMode::IconMode);
+
+	// TODO replace hardcoded size hack with automatic layout
+	ui.cameras->setFixedWidth(96);
+	ui.cameras->setFixedHeight((
+		ui.cameras->iconSize().height() +
+		(cameras.size() > 1 ? ui.cameras->fontInfo().pixelSize() : 0) +
+		12 + 2) * cameras.size());
+
+	connect(ui.cameras, &QListWidget::currentItemChanged, this, &PoseLab::currentCameraChanged);
+
+
+	connect(ui.openMovieFolder, &QPushButton::pressed, this, &PoseLab::selectMovieFolder);
+	connect(ui.movies, &QListWidget::currentItemChanged, this, &PoseLab::currentMovieChanged);
+
+	ui.movies->setFixedWidth(96);
+	QScroller::grabGesture(ui.movies, QScroller::LeftMouseButtonGesture);
+
+	if (QFile::exists("../testdata")) {
+		showMovieFolder("../testdata");
+	}
+
+	connect(ui.gaussKernelSize, qOverload<int>(&QSpinBox::valueChanged), this, &PoseLab::setGaussKernelSize);
+
+
 
 	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
@@ -88,3 +145,57 @@ PoseLab::~PoseLab() {
 	worker.quit();
 	worker.wait();
 }
+
+void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous) {
+
+}
+
+void PoseLab::currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous) {
+	if (current) {
+		VideoFrameSource* video = new VideoFrameSource(nullptr);
+		video->setPath(current->data(Qt::UserRole).toString());
+		showSource(video);
+	}
+}
+
+void PoseLab::selectMovieFolder() {
+	QFileDialog dialog(this, tr("Open Movie"), "../testdata/");
+	dialog.setFileMode(QFileDialog::AnyFile);
+	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv)"));
+	if (dialog.exec()) {
+		QDir dir = QDir(dialog.selectedFiles()[0]);
+		dir.cdUp();
+		showMovieFolder(dir.absolutePath());
+	}
+}
+
+void PoseLab::showMovieFolder(const QString& folder) {
+	ui.movies->clear();
+	QDir dir = QDir(folder);
+	dir.setNameFilters(QStringList() << "*.mpg" << "*.mkv" << "*.3gp" << "*.mp4" << "*.wmv");
+	QFileInfoList list = dir.entryInfoList();
+	for (int i = 0; i < list.size(); ++i) {
+		QFileInfo fileInfo = list.at(i);
+		QIcon icon = QFileIconProvider().icon(fileInfo);
+		QListWidgetItem* item = new QListWidgetItem(icon, fileInfo.baseName().replace("_"," "), ui.movies);
+		item->setToolTip(fileInfo.baseName());
+		item->setData(Qt::UserRole, QVariant(fileInfo.absoluteFilePath()));
+	}
+}
+
+void PoseLab::showSource(VideoFrameSource* source) {
+	if (videoFrameSource.get() != nullptr) {
+		videoFrameSource->end();
+	}
+	videoFrameSource = unique_ptr<VideoFrameSource>(source);
+
+	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
+	videoFrameSource->setTarget(video->surface);
+	videoFrameSource->start();
+}
+
+void PoseLab::setGaussKernelSize(int newSize) {
+	pose_estimator->setGaussKernelSize(newSize);
+}
+
+

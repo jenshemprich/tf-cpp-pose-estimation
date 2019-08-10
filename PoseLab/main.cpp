@@ -6,8 +6,9 @@
 #include <QCamera>
 #include <qfile.h>
 #include <QVideoSurfaceFormat>
-#include <QCameraInfo>
 #include <QMediaPlayer>
+#include <QCameraInfo>
+#include <QCamera>
 
 #include "MediaWorker.h"
 #include "PoseLab.h"
@@ -70,21 +71,6 @@ void show(unique_ptr<QCamera>& camera, QAbstractVideoSurface* surface) {
 	camera->start();
 }
 
-
-unique_ptr<QMediaPlayer> mediaPlayer(const char* path) {
-	QMediaPlayer* player = new QMediaPlayer();
-	QUrl url = QUrl::fromLocalFile(path);
-	player->setMedia(url);
-
-	return unique_ptr<QMediaPlayer>(player);
-}
-
-void show(unique_ptr< QMediaPlayer >& player, QAbstractVideoSurface* surface) {
-	player->setVideoOutput(surface);
-	player->play();
-	assert(player->isAvailable());
-}
-
 int main(int argc, char* argv[]) {
 	QApplication a(argc, argv);
 	// TODO font size propagation doesn't work in qDarkStyle
@@ -95,30 +81,6 @@ int main(int argc, char* argv[]) {
 	PoseLab poseLab;
 	poseLab.show();
 
-	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-	foreach(const QCameraInfo & cameraInfo, cameras) {
-		QString description = cameraInfo.description();
-
-		QString iconResource = ":Resources/Devices/" + description + ".png";
-		if (!QFile::exists(iconResource)) {
-			iconResource = ":Resources/Devices/camera_lens.png";
-		}
-
-		if (description.indexOf("Microsoft ") == 0) {
-			description = description.mid(10);
-		}
-		if (description.indexOf("Camera ") == 0) {
-			description = description.mid(7);
-		}
-		new QListWidgetItem(QIcon(iconResource), description, poseLab.cameras);
-	}
-	poseLab.cameras->setVisible(cameras.size() > 0);
-
-	// TODO Show item text only if multiple cameras
-
-	// TODO resolve hardcoded horizontal size hack to good practice
-	poseLab.cameras->setFixedWidth(96);
-	poseLab.movies->setFixedWidth(96);
 
 
 	//unique_ptr<QThread> worker(QThread::create([&poseLab]() {

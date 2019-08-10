@@ -7,5 +7,6 @@
         <file>Resources/Devices/camera_lens.png</file>
         <file>Resources/Devices/Microsoft Camera Front.png</file>
         <file>Resources/Devices/Microsoft Camera Rear.png</file>
+        <file>Resources/Devices/webcam.png</file>
     </qresource>
 </RCC>
