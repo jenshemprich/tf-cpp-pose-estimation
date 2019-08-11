@@ -10,7 +10,6 @@
 #include <QCameraInfo>
 #include <QCamera>
 
-#include "MediaWorker.h"
 #include "PoseLab.h"
 
 using namespace std;
@@ -82,7 +81,6 @@ int main(int argc, char* argv[]) {
 	poseLab.show();
 
 
-
 	//unique_ptr<QThread> worker(QThread::create([&poseLab]() {
 	//	unique_ptr<QCamera> cam = camera();
 	//	cam->moveToThread(QThread::currentThread());
@@ -92,14 +90,6 @@ int main(int argc, char* argv[]) {
 	//	}
 	//}));
 	//worker->start();
-
-	//// TODO Camera must be created inside thread - moveToThread isn't sufficient
-	//unique_ptr<QCamera> cam = camera();
-	//MediaWorker mediaWorker([&poseLab, &cam]() {
-	//	cam->moveToThread(QThread::currentThread());
-	//	show(cam, poseLab.video->surface);
-	//});
-	//mediaWorker.start();
 
 
 	// https://forum.qt.io/topic/89856/switch-qmultimedia-backend-without-recompiling-whole-qt/2

@@ -57,18 +57,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaWorker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VideoFrameSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VideoFrameSource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -101,7 +95,7 @@
     <QtMoc Include="VideoFrameProcessor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="MediaWorker.h">
+    <QtMoc Include="VideoFrameSource.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
