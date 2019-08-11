@@ -15,6 +15,7 @@
 #include <QFileIconProvider>
 #include <QScroller>
 #include <QSpinBox>
+#include <QList>
 
 #include <PoseEstimation/CocoOpenCVRenderer.h>
 
@@ -109,28 +110,38 @@ PoseLab::PoseLab(QWidget *parent)
 	}
 	ui.cameras->setVisible(cameras.size() > 0);
 	ui.cameras->setViewMode(cameras.size() == 1 ? QListView::ViewMode::IconMode : QListView::ViewMode::IconMode);
-	// TODO replace hardcoded size hack with automatic layout
-	ui.cameras->setFixedWidth(96);
+	ui.cameras->setStyleSheet("background-color: rgba(0,0,0,0%)");
+
+	// TODO replace hardcoded listview width with automatic layout
+	ui.cameras->setFixedWidth(64 + 8);
 	ui.cameras->setFixedHeight((
 		ui.cameras->iconSize().height() +
 		(cameras.size() > 1 ? ui.cameras->fontInfo().pixelSize() : 0) +
 		12 + 2) * cameras.size());
 	connect(ui.cameras, &QListWidget::currentItemChanged, this, &PoseLab::currentCameraChanged);
 
-	connect(ui.openMovieFolder, &QPushButton::pressed, this, &PoseLab::selectMovieFolder);
 	connect(ui.movies, &QListWidget::currentItemChanged, this, &PoseLab::currentMovieChanged);
 
-	ui.movies->setFixedWidth(96);
+	ui.movies->setFixedWidth(64 + 8);
 	QScroller::grabGesture(ui.movies, QScroller::LeftMouseButtonGesture);
+	// single add source
+	ui.movies->setVisible(false);
+	ui.movies->setStyleSheet("background-color: rgba(0,0,0,0%)");
 
-	if (QFile::exists("../testdata")) {
-		showMovieFolder("../testdata");
-	}
+	connect(ui.addSource, &QToolButton::pressed, this, &PoseLab::addSource);
+
+	//if (QFile::exists("../testdata")) {
+	//	showMovieFolder("../testdata");
+	//}
+
+	// TODO Deprecated -> remove related code
+	connect(ui.openMovieFolder, &QPushButton::pressed, this, &PoseLab::selectMovieFolder);
+	ui.openMovieFolder->setVisible(false);
 
 	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
 	// TODO report issue @ https://github.com/ColinDuquesnoy/QDarkStyleSheet
-	ui.overlayTest->setStyleSheet("background-color: rgba(255,0,0,0%)");
+	ui.overlayTest->setStyleSheet("background-color: rgba(0,0,0,0%)");
 }
 
 void PoseLab::closeEvent(QCloseEvent* event) {
@@ -156,13 +167,30 @@ void PoseLab::currentMovieChanged(QListWidgetItem* current, QListWidgetItem* pre
 }
 
 void PoseLab::selectMovieFolder() {
-	QFileDialog dialog(this, tr("Open Movie"), "../testdata/");
+	QFileDialog dialog(this, tr("Open Movie Folder"), "../testdata/");
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv)"));
 	if (dialog.exec()) {
 		QDir dir = QDir(dialog.selectedFiles()[0]);
 		dir.cdUp();
 		showMovieFolder(dir.absolutePath());
+	}
+}
+
+void PoseLab::addSource() {
+	QFileDialog dialog(this, tr("Open Video Source"), "../testdata/");
+	dialog.setFileMode(QFileDialog::AnyFile);
+	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv)"));
+	if (dialog.exec()) {
+		QFileInfo source = dialog.selectedFiles()[0];
+		QIcon icon = QFileIconProvider().icon(source);
+		QListWidgetItem* item = new QListWidgetItem(icon, nullptr, ui.movies);
+		item->setToolTip(source.baseName());
+		item->setData(Qt::UserRole, QVariant(source.absoluteFilePath()));
+		ui.movies->setVisible(true);
+		ui.movies->setItemSelected(item, true);
+		// TODO Learn why connected signal isn't emmited
+		currentMovieChanged(item, nullptr);
 	}
 }
 

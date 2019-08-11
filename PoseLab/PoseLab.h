@@ -39,7 +39,7 @@ public slots:
 	void currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous);
 	void currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous);
 	void selectMovieFolder();
-	void showMovieFolder(const QString& folder);
+	void addSource();
 	void showSource(VideoFrameSource* videoFrameSource);
 
 	void px1();
@@ -66,6 +66,8 @@ protected:
 	VideoFrameProcessor inference;
 	int inferencePxResizeFactor;
 	int inferenceUpscaleFactor;
+
+	void showMovieFolder(const QString& folder);
 
 private:
 	Ui::PoseLabClass ui;

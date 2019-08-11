@@ -24,8 +24,8 @@
      <rect>
       <x>20</x>
       <y>30</y>
-      <width>999</width>
-      <height>440</height>
+      <width>1049</width>
+      <height>502</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0">
@@ -88,17 +88,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_4">
-         <property name="text">
-          <string>x4</string>
-         </property>
-         <property name="icon">
-          <iconset resource="PoseLab.qrc">
-           <normaloff>:/Resources/logo-ps.png</normaloff>:/Resources/logo-ps.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="u">
          <property name="text">
           <string>u=</string>
@@ -145,17 +134,6 @@
          </property>
          <property name="checkable">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButton_2">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="PoseLab.qrc">
-           <normaloff>:/Resources/ICON-icon.png</normaloff>:/Resources/ICON-icon.png</iconset>
          </property>
         </widget>
        </item>
@@ -241,8 +219,8 @@
          <widget class="QLabel" name="overlayTest">
           <property name="geometry">
            <rect>
-            <x>40</x>
-            <y>30</y>
+            <x>60</x>
+            <y>100</y>
             <width>331</width>
             <height>311</height>
            </rect>
@@ -272,8 +250,8 @@
          <widget class="QLabel" name="fps">
           <property name="geometry">
            <rect>
-            <x>10</x>
-            <y>30</y>
+            <x>30</x>
+            <y>50</y>
             <width>121</width>
             <height>31</height>
            </rect>
@@ -321,108 +299,219 @@
      <item row="2" column="1">
       <layout class="QVBoxLayout" name="videoInputs">
        <item>
-        <widget class="QListWidget" name="cameras">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+        <spacer name="verticalSpacerSourcesTop">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="baseSize">
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>64</width>
-           <height>0</height>
+           <width>20</width>
+           <height>40</height>
           </size>
          </property>
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>96</width>
-           <height>96</height>
-          </size>
-         </property>
-         <property name="verticalScrollMode">
-          <enum>QAbstractItemView::ScrollPerPixel</enum>
-         </property>
-         <property name="horizontalScrollMode">
-          <enum>QAbstractItemView::ScrollPerPixel</enum>
-         </property>
-         <property name="movement">
-          <enum>QListView::Static</enum>
-         </property>
-         <property name="flow">
-          <enum>QListView::TopToBottom</enum>
-         </property>
-         <property name="isWrapping" stdset="0">
-          <bool>false</bool>
-         </property>
-         <property name="resizeMode">
-          <enum>QListView::Fixed</enum>
-         </property>
-         <property name="viewMode">
-          <enum>QListView::IconMode</enum>
-         </property>
-         <property name="modelColumn">
-          <number>0</number>
-         </property>
-         <property name="uniformItemSizes">
-          <bool>true</bool>
-         </property>
-         <property name="itemAlignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
+        </spacer>
        </item>
        <item>
-        <widget class="QListWidget" name="movies">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QListWidget" name="cameras">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>64</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="verticalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <property name="verticalScrollMode">
+            <enum>QAbstractItemView::ScrollPerPixel</enum>
+           </property>
+           <property name="horizontalScrollMode">
+            <enum>QAbstractItemView::ScrollPerItem</enum>
+           </property>
+           <property name="movement">
+            <enum>QListView::Static</enum>
+           </property>
+           <property name="flow">
+            <enum>QListView::TopToBottom</enum>
+           </property>
+           <property name="isWrapping" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Fixed</enum>
+           </property>
+           <property name="layoutMode">
+            <enum>QListView::SinglePass</enum>
+           </property>
+           <property name="viewMode">
+            <enum>QListView::IconMode</enum>
+           </property>
+           <property name="modelColumn">
+            <number>0</number>
+           </property>
+           <property name="uniformItemSizes">
+            <bool>true</bool>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="itemAlignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QListWidget" name="movies">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>64</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="verticalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::AdjustIgnored</enum>
+           </property>
+           <property name="dragDropMode">
+            <enum>QAbstractItemView::NoDragDrop</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <property name="textElideMode">
+            <enum>Qt::ElideMiddle</enum>
+           </property>
+           <property name="verticalScrollMode">
+            <enum>QAbstractItemView::ScrollPerPixel</enum>
+           </property>
+           <property name="horizontalScrollMode">
+            <enum>QAbstractItemView::ScrollPerItem</enum>
+           </property>
+           <property name="movement">
+            <enum>QListView::Static</enum>
+           </property>
+           <property name="flow">
+            <enum>QListView::TopToBottom</enum>
+           </property>
+           <property name="isWrapping" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Fixed</enum>
+           </property>
+           <property name="layoutMode">
+            <enum>QListView::SinglePass</enum>
+           </property>
+           <property name="viewMode">
+            <enum>QListView::IconMode</enum>
+           </property>
+           <property name="modelColumn">
+            <number>0</number>
+           </property>
+           <property name="uniformItemSizes">
+            <bool>true</bool>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="itemAlignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QToolButton" name="addSource">
+           <property name="font">
+            <font>
+             <pointsize>23</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>+</string>
+           </property>
+           <property name="icon">
+            <iconset resource="PoseLab.qrc">
+             <normaloff>:/Resources/Devices/add_source.png</normaloff>:/Resources/Devices/add_source.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacerSourcesBottom">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="baseSize">
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>64</width>
-           <height>0</height>
+           <width>20</width>
+           <height>40</height>
           </size>
          </property>
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="sizeAdjustPolicy">
-          <enum>QAbstractScrollArea::AdjustIgnored</enum>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>64</width>
-           <height>64</height>
-          </size>
-         </property>
-         <property name="verticalScrollMode">
-          <enum>QAbstractItemView::ScrollPerPixel</enum>
-         </property>
-         <property name="horizontalScrollMode">
-          <enum>QAbstractItemView::ScrollPerPixel</enum>
-         </property>
-         <property name="resizeMode">
-          <enum>QListView::Fixed</enum>
-         </property>
-         <property name="viewMode">
-          <enum>QListView::IconMode</enum>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
+        </spacer>
        </item>
        <item>
         <widget class="QToolButton" name="openMovieFolder">
@@ -464,8 +553,8 @@
          </property>
          <property name="iconSize">
           <size>
-           <width>32</width>
-           <height>32</height>
+           <width>64</width>
+           <height>64</height>
           </size>
          </property>
          <property name="checkable">
@@ -475,22 +564,6 @@
           <bool>false</bool>
          </property>
         </widget>
-       </item>
-       <item>
-        <spacer name="top">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </item>
