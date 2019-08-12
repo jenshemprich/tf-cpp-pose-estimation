@@ -69,6 +69,8 @@ protected:
 
 	void showMovieFolder(const QString& folder);
 
+	void setFixedHeight(QListView* listView, int itemCount);
+
 private:
 	Ui::PoseLabClass ui;
 };

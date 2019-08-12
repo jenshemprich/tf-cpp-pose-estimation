@@ -114,19 +114,16 @@ PoseLab::PoseLab(QWidget *parent)
 
 	// TODO replace hardcoded listview width with automatic layout
 	ui.cameras->setFixedWidth(64 + 8);
-	ui.cameras->setFixedHeight((
-		ui.cameras->iconSize().height() +
-		(cameras.size() > 1 ? ui.cameras->fontInfo().pixelSize() : 0) +
-		12 + 2) * cameras.size());
+	setFixedHeight(ui.cameras, cameras.size());
 	connect(ui.cameras, &QListWidget::currentItemChanged, this, &PoseLab::currentCameraChanged);
 
-	connect(ui.movies, &QListWidget::currentItemChanged, this, &PoseLab::currentMovieChanged);
 
 	ui.movies->setFixedWidth(64 + 8);
 	QScroller::grabGesture(ui.movies, QScroller::LeftMouseButtonGesture);
 	// single add source
 	ui.movies->setVisible(false);
 	ui.movies->setStyleSheet("background-color: rgba(0,0,0,0%)");
+	connect(ui.movies, &QListWidget::currentItemChanged, this, &PoseLab::currentMovieChanged);
 
 	connect(ui.addSource, &QToolButton::pressed, this, &PoseLab::addSource);
 
@@ -189,6 +186,7 @@ void PoseLab::addSource() {
 		item->setData(Qt::UserRole, QVariant(source.absoluteFilePath()));
 		ui.movies->setVisible(true);
 		ui.movies->setItemSelected(item, true);
+		setFixedHeight(ui.movies, ui.movies->count());
 		// TODO Learn why connected signal isn't emmited
 		currentMovieChanged(item, nullptr);
 	}
@@ -205,7 +203,18 @@ void PoseLab::showMovieFolder(const QString& folder) {
 		QListWidgetItem* item = new QListWidgetItem(icon, fileInfo.baseName().replace("_"," "), ui.movies);
 		item->setToolTip(fileInfo.baseName());
 		item->setData(Qt::UserRole, QVariant(fileInfo.absoluteFilePath()));
+		setFixedHeight(ui.movies, ui.movies->count());
+		ui.movies->setVisible(true);
 	}
+}
+
+void PoseLab::setFixedHeight(QListView* listView, int itemCount) {
+	int items = (itemCount < ui.cameras->model()->rowCount()
+		? itemCount
+		: ui.cameras->model()->rowCount()
+	);
+	int heightHint = ui.cameras->sizeHintForRow(0);
+	listView->setFixedHeight(items * heightHint);
 }
 
 void PoseLab::showSource(VideoFrameSource* source) {
