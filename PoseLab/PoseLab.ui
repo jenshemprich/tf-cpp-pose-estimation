@@ -22,149 +22,54 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>1049</width>
-      <height>568</height>
+      <x>10</x>
+      <y>20</y>
+      <width>741</width>
+      <height>421</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
+    <layout class="QHBoxLayout" name="mainLayout">
      <property name="spacing">
       <number>0</number>
      </property>
-     <item row="2" column="4">
-      <layout class="QGridLayout" name="MaintainAspectRatio">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetNoConstraint</enum>
-       </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item row="0" column="1">
-        <spacer name="verticalSpacerTop">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::MinimumExpanding</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="0">
-        <spacer name="Left">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="1">
-        <widget class="OpenGlVideoView" name="openGLvideo" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>1</horstretch>
-           <verstretch>1</verstretch>
-          </sizepolicy>
-         </property>
-         <widget class="QLabel" name="overlayTest">
-          <property name="geometry">
-           <rect>
-            <x>60</x>
-            <y>100</y>
-            <width>331</width>
-            <height>311</height>
-           </rect>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="pixmap">
-           <pixmap resource="PoseLab.qrc">:/Resources/logo-ps.png</pixmap>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::NoTextInteraction</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="fps">
-          <property name="geometry">
-           <rect>
-            <x>30</x>
-            <y>50</y>
-            <width>121</width>
-            <height>31</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>10.2 FPS </string>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <spacer name="verticalSpacerBottom">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::MinimumExpanding</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="2">
-        <spacer name="Right">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="2" column="1">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
       <layout class="QVBoxLayout" name="videoInputs">
+       <item>
+        <layout class="QHBoxLayout" name="home">
+         <item>
+          <widget class="QToolButton" name="showSettings">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>1</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="PoseLab.qrc">
+             <normaloff>:/Resources/ICON-icon.png</normaloff>:/Resources/ICON-icon.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoRaise">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item>
         <spacer name="verticalSpacerSourcesTop">
          <property name="orientation">
@@ -401,40 +306,135 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="1">
-      <layout class="QHBoxLayout" name="home">
-       <item>
-        <widget class="QToolButton" name="showSettings">
+     <item>
+      <layout class="QGridLayout" name="MaintainAspectRatio">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetNoConstraint</enum>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="1">
+        <spacer name="verticalSpacerTop">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
+        <spacer name="Left">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="OpenGlVideoView" name="openGLvideo" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>
            <verstretch>1</verstretch>
           </sizepolicy>
          </property>
-         <property name="text">
-          <string/>
+         <widget class="QLabel" name="overlayTest">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>100</y>
+            <width>331</width>
+            <height>311</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="pixmap">
+           <pixmap resource="PoseLab.qrc">:/Resources/logo-ps.png</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::NoTextInteraction</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="fps">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>50</y>
+            <width>121</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>10.2 FPS </string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <spacer name="verticalSpacerBottom">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="icon">
-          <iconset resource="PoseLab.qrc">
-           <normaloff>:/Resources/ICON-icon.png</normaloff>:/Resources/ICON-icon.png</iconset>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
          </property>
-         <property name="iconSize">
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>64</width>
-           <height>64</height>
+           <width>20</width>
+           <height>0</height>
           </size>
          </property>
-         <property name="checkable">
-          <bool>true</bool>
+        </spacer>
+       </item>
+       <item row="1" column="2">
+        <spacer name="Right">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-         <property name="autoRaise">
-          <bool>false</bool>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
-     <item row="2" column="5">
+     <item>
       <layout class="QVBoxLayout" name="toolBar">
        <item>
         <spacer name="verticalSpacer">

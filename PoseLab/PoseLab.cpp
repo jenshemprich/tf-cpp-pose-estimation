@@ -50,7 +50,7 @@ PoseLab::PoseLab(QWidget *parent)
 	, videoFrameSource(nullptr)
 {
 	ui.setupUi(this);
-	centralWidget()->setLayout(ui.gridLayout);
+	centralWidget()->setLayout(ui.mainLayout);
 
 	pose_estimator->loadModel();
 	pose_estimator->setGaussKernelSize(25);
