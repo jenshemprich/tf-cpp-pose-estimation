@@ -19,6 +19,9 @@
 
 #include <PoseEstimation/CocoOpenCVRenderer.h>
 
+#include "CameraVideoFrameSource.h"
+#include "MovieVideoFrameSource.h"
+
 #include "PoseLab.h"
 
 using namespace cv;
@@ -152,12 +155,21 @@ PoseLab::~PoseLab() {
 }
 
 void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous) {
-
+	if (current) {
+		QString deviceName = current->data(Qt::UserRole).toString();
+		foreach(const QCameraInfo& cameraInfo, QCameraInfo::availableCameras()) {
+			if (cameraInfo.deviceName() == deviceName) {
+				CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo, nullptr);
+				showSource(video);
+				break;
+			}
+		}
+	}
 }
 
 void PoseLab::currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous) {
 	if (current) {
-		VideoFrameSource* video = new VideoFrameSource(nullptr);
+		MovieVideoFrameSource* video = new MovieVideoFrameSource(nullptr);
 		video->setPath(current->data(Qt::UserRole).toString());
 		showSource(video);
 	}
@@ -217,13 +229,13 @@ void PoseLab::setFixedHeight(QListView* listView, int itemCount) {
 	listView->setFixedHeight(items * heightHint);
 }
 
-void PoseLab::showSource(VideoFrameSource* source) {
+void PoseLab::showSource(AbstractVideoFrameSource* source) {
 	if (videoFrameSource.get() != nullptr) {
 		videoFrameSource->end();
 	}
 
-	videoFrameSource = unique_ptr<VideoFrameSource>(source);
-	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &VideoFrameSource::end);
+	videoFrameSource = unique_ptr<AbstractVideoFrameSource>(source);
+	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &AbstractVideoFrameSource::end);
 	videoFrameSource->setTarget(ui.openGLvideo->surface);
 	videoFrameSource->start();
 }

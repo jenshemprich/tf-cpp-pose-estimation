@@ -6,14 +6,13 @@
 class QAbstractVideoSurface;
 class QMediaPlayer;
 
-class VideoFrameSource : public QObject {
+class AbstractVideoFrameSource : public QObject {
 	Q_OBJECT
 
 public:
-	VideoFrameSource(QObject *parent);
-	~VideoFrameSource();
+	AbstractVideoFrameSource(QObject *parent);
+	~AbstractVideoFrameSource();
 
-	void setPath(const QString& path);
 	void setTarget(QAbstractVideoSurface* surface);
 
 	void start();
@@ -25,14 +24,11 @@ signals:
 	void end_();
 
 private slots:
-	void startWork();
-	void endWork();
+	virtual void startWork()=0;
+	virtual void endWork()=0;
 
-public:
-	QThread worker;
-private:
-	QString path;
+protected:
 	QAbstractVideoSurface* surface;
-
-	std::unique_ptr<QMediaPlayer> mediaPlayer;
+private:
+	QThread worker;
 };

@@ -14,7 +14,7 @@
 #include "OpenGlVideoSurface.h"
 #include "OpenGlVideoView.h"
 #include "VideoFrameProcessor.h"
-#include "VideoFrameSource.h"
+#include "AbstractVideoFrameSource.h"
 
 #include "ui_PoseLab.h"
 
@@ -30,7 +30,6 @@ public:
 	QButtonGroup inferenceResolutionGroup;
 	QButtonGroup inferenceUpscalenGroup;
 
-	std::unique_ptr<VideoFrameSource> videoFrameSource;
 
 signals:
 	void aboutToClose();
@@ -40,7 +39,6 @@ public slots:
 	void currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous);
 	void selectMovieFolder();
 	void addSource();
-	void showSource(VideoFrameSource* videoFrameSource);
 
 	void px1();
 	void px2();
@@ -67,9 +65,11 @@ protected:
 	int inferencePxResizeFactor;
 	int inferenceUpscaleFactor;
 
+	void showSource(AbstractVideoFrameSource* videoFrameSource);
 	void showMovieFolder(const QString& folder);
-
 	void setFixedHeight(QListView* listView, int itemCount);
+
+	std::unique_ptr<AbstractVideoFrameSource> videoFrameSource;
 
 private:
 	Ui::PoseLabClass ui;
