@@ -7,7 +7,7 @@
 
 class CameraVideoFrameSource : public AbstractVideoFrameSource {
 public:
-	CameraVideoFrameSource(const QCameraInfo& cameraInfo, QObject* parent);
+	CameraVideoFrameSource(const QCameraInfo& cameraInfo, QThread& worker);
 	virtual ~CameraVideoFrameSource();
 
 	virtual void startWork() override;
@@ -15,5 +15,5 @@ public:
 
 private:
 	const QCameraInfo cameraInfo;
-	std::unique_ptr<QCamera> camera;
+	QCamera* camera;
 };

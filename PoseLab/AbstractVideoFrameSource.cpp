@@ -6,16 +6,17 @@
 
 using namespace std;
 
-AbstractVideoFrameSource::AbstractVideoFrameSource(QObject* parent)
-	: QObject(parent), worker(this), surface(nullptr)
+AbstractVideoFrameSource::AbstractVideoFrameSource(QThread& worker)
+	: QObject(nullptr), worker(worker), surface(nullptr)
 {
-	worker.start();
 	moveToThread(&worker);
+	connect(this, &AbstractVideoFrameSource::start_, this, &AbstractVideoFrameSource::startWork);
+	connect(this, &AbstractVideoFrameSource::end_, this, &AbstractVideoFrameSource::endWork);
 }
 
 AbstractVideoFrameSource::~AbstractVideoFrameSource() {
-	worker.quit();
-	worker.wait();
+	disconnect(this, &AbstractVideoFrameSource::start_, this, &AbstractVideoFrameSource::startWork);
+	disconnect(this, &AbstractVideoFrameSource::end_, this, &AbstractVideoFrameSource::endWork);
 }
 
 void AbstractVideoFrameSource::setTarget(QAbstractVideoSurface* surface) {
@@ -23,15 +24,11 @@ void AbstractVideoFrameSource::setTarget(QAbstractVideoSurface* surface) {
 }
 
 void AbstractVideoFrameSource::start() {
-	connect(this, &AbstractVideoFrameSource::start_, this, &AbstractVideoFrameSource::startWork);
 	emit start_();
-	disconnect(this, &AbstractVideoFrameSource::start_, this, &AbstractVideoFrameSource::startWork);
-	connect(this, &AbstractVideoFrameSource::end_, this, &AbstractVideoFrameSource::endWork);
 }
 
 void AbstractVideoFrameSource::end() {
 	emit end_();
-	disconnect(this, &AbstractVideoFrameSource::end_, this, &AbstractVideoFrameSource::endWork);
 	// TODO Application won't exit after playing second movie
 	// - same problem as in early dev when worker hadn't processed events until the media object was deleted
 }

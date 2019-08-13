@@ -60,7 +60,9 @@ protected:
 
 	std::unique_ptr<PoseEstimator> pose_estimator;
 	TensorMat input;
-	QThread worker;
+	QThread inferenceThread;
+	QThread mediaThread;
+
 	VideoFrameProcessor inference;
 	int inferencePxResizeFactor;
 	int inferenceUpscaleFactor;
@@ -69,7 +71,7 @@ protected:
 	void showMovieFolder(const QString& folder);
 	void setFixedHeight(QListView* listView, int itemCount);
 
-	std::unique_ptr<AbstractVideoFrameSource> videoFrameSource;
+	AbstractVideoFrameSource* videoFrameSource;
 
 private:
 	Ui::PoseLabClass ui;

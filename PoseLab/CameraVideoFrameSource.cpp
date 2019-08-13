@@ -2,23 +2,20 @@
 
 #include "CameraVideoFrameSource.h"
 
-using namespace std;
-
-CameraVideoFrameSource::CameraVideoFrameSource(const QCameraInfo& cameraInfo, QObject* parent)
-	: AbstractVideoFrameSource(parent), cameraInfo(cameraInfo)
+CameraVideoFrameSource::CameraVideoFrameSource(const QCameraInfo& cameraInfo, QThread& worker)
+	: AbstractVideoFrameSource(worker), cameraInfo(cameraInfo), camera(nullptr)
 {
 }
 
 CameraVideoFrameSource::~CameraVideoFrameSource() {
 	end();
-
-	while (camera.get() != nullptr) {
+	while (camera != nullptr) {
 		QCoreApplication::processEvents();
 	}
 }
 
 void CameraVideoFrameSource::startWork() {
-	camera = unique_ptr<QCamera>(new QCamera());
+	camera = new QCamera(cameraInfo);
 	QCameraViewfinderSettings settings(camera->viewfinderSettings());
 	settings.setResolution(640, 480);
 	camera->setViewfinderSettings(settings);
@@ -29,6 +26,7 @@ void CameraVideoFrameSource::startWork() {
 void CameraVideoFrameSource::endWork() {
 	if (camera != nullptr) {
 		camera->stop();
+		delete camera;
 		camera = nullptr;
 	}
 }

@@ -31,7 +31,7 @@ PoseLab::PoseLab(QWidget *parent)
 	: QMainWindow(parent)
 	, pose_estimator(unique_ptr<PoseEstimator>(new PoseEstimator("models/graph/mobilenet_thin/graph_opt.pb")))
 	, input(TensorMat::AutoResize, cv::Size(0, 0))
-	, worker()
+	, inferenceThread()
 	, inference([this](QVideoFrame& frame) {
 		input.resize(cv::Size(frame.width() / inferencePxResizeFactor, frame.height() / inferencePxResizeFactor));
 		// TODO convert directly to CV_32FC3 in TensorMat
@@ -50,6 +50,7 @@ PoseLab::PoseLab(QWidget *parent)
 	, inferenceUpscaleFactor(4)
 	, inferenceResolutionGroup(this)
 	, inferenceUpscalenGroup(this)
+	, mediaThread()
 	, videoFrameSource(nullptr)
 {
 	ui.setupUi(this);
@@ -57,10 +58,12 @@ PoseLab::PoseLab(QWidget *parent)
 
 	pose_estimator->loadModel();
 	pose_estimator->setGaussKernelSize(25);
-	worker.setPriority(QThread::Priority::LowestPriority);
-	worker.start();
-	worker.connect(ui.openGLvideo->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
-	inference.moveToThread(&worker);
+	inferenceThread.setPriority(QThread::Priority::LowestPriority);
+	inferenceThread.start();
+	inferenceThread.connect(ui.openGLvideo->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
+	inference.moveToThread(&inferenceThread);
+
+	mediaThread.start();
 
 	// TODO Move to OpenGLVideo constructor, but doesn't have any effect there
 	QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -146,12 +149,27 @@ PoseLab::PoseLab(QWidget *parent)
 
 void PoseLab::closeEvent(QCloseEvent* event) {
 	event->accept();
+
+	//if (videoFrameSource != nullptr) {
+	//	videoFrameSource->end();
+	//	videoFrameSource = nullptr;
+	//}
+
 	emit aboutToClose();
 }
 
 PoseLab::~PoseLab() {
-	worker.quit();
-	worker.wait();
+	inferenceThread.quit();
+	inferenceThread.wait();
+
+	if (videoFrameSource != nullptr) {
+		videoFrameSource->end();
+		delete videoFrameSource;
+		videoFrameSource = nullptr;
+	}
+
+	mediaThread.quit();
+	mediaThread.wait();
 }
 
 void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous) {
@@ -159,7 +177,7 @@ void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* pr
 		QString deviceName = current->data(Qt::UserRole).toString();
 		foreach(const QCameraInfo& cameraInfo, QCameraInfo::availableCameras()) {
 			if (cameraInfo.deviceName() == deviceName) {
-				CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo, nullptr);
+				CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo, mediaThread);
 				showSource(video);
 				break;
 			}
@@ -169,7 +187,7 @@ void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* pr
 
 void PoseLab::currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous) {
 	if (current) {
-		MovieVideoFrameSource* video = new MovieVideoFrameSource(nullptr);
+		MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
 		video->setPath(current->data(Qt::UserRole).toString());
 		showSource(video);
 	}
@@ -230,12 +248,12 @@ void PoseLab::setFixedHeight(QListView* listView, int itemCount) {
 }
 
 void PoseLab::showSource(AbstractVideoFrameSource* source) {
-	if (videoFrameSource.get() != nullptr) {
+	if (videoFrameSource != nullptr) {
 		videoFrameSource->end();
+		videoFrameSource->deleteLater();
 	}
 
-	videoFrameSource = unique_ptr<AbstractVideoFrameSource>(source);
-	connect(this, &PoseLab::aboutToClose, videoFrameSource.get(), &AbstractVideoFrameSource::end);
+	videoFrameSource = source;
 	videoFrameSource->setTarget(ui.openGLvideo->surface);
 	videoFrameSource->start();
 }

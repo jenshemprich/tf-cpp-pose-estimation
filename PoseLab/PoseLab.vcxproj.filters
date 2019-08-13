@@ -74,6 +74,9 @@
     <ClInclude Include="CameraVideoFrameSource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MovieVideoFrameSource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PoseLab.ui">
@@ -105,9 +108,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="AbstractVideoFrameSource.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="MovieVideoFrameSource.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

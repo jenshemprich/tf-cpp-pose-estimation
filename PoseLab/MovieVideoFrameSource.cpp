@@ -2,17 +2,14 @@
 
 #include "MovieVideoFrameSource.h"
 
-using namespace std;
-
-MovieVideoFrameSource::MovieVideoFrameSource(QObject* parent)
-	: AbstractVideoFrameSource(parent)
+MovieVideoFrameSource::MovieVideoFrameSource(QThread& worker)
+	: AbstractVideoFrameSource(worker), mediaPlayer(nullptr)
 {
 }
 
 MovieVideoFrameSource::~MovieVideoFrameSource() {
 	end();
-
-	while (mediaPlayer.get() != nullptr) {
+	while (mediaPlayer != nullptr) {
 		QCoreApplication::processEvents();
 	}
 }
@@ -21,8 +18,9 @@ void MovieVideoFrameSource::setPath(const QString& path) {
 	this->path = path;
 }
 
+
 void MovieVideoFrameSource::startWork() {
-	mediaPlayer = unique_ptr<QMediaPlayer>(new QMediaPlayer());
+	mediaPlayer = new QMediaPlayer();
 	const QUrl url = QUrl::fromLocalFile(path);
 	mediaPlayer->setMedia(url);
 	mediaPlayer->setVideoOutput(surface);
@@ -32,6 +30,7 @@ void MovieVideoFrameSource::startWork() {
 void MovieVideoFrameSource::endWork() {
 	if (mediaPlayer != nullptr) {
 		mediaPlayer->stop();
+		delete mediaPlayer;
 		mediaPlayer = nullptr;
 	}
 }

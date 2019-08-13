@@ -4,12 +4,9 @@
 
 #include "AbstractVideoFrameSource.h"
 
-class MovieVideoFrameSource : public AbstractVideoFrameSource
-{
-	Q_OBJECT
-
+class MovieVideoFrameSource : public AbstractVideoFrameSource {
 public:
-	MovieVideoFrameSource(QObject* parent);
+	MovieVideoFrameSource(QThread& worker);
 	virtual ~MovieVideoFrameSource();
 
 	void setPath(const QString& path);
@@ -19,5 +16,5 @@ public:
 
 private:
 	QString path;
-	std::unique_ptr<QMediaPlayer> mediaPlayer;
+	QMediaPlayer* mediaPlayer;
 };
