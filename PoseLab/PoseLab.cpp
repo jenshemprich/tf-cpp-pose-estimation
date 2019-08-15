@@ -159,6 +159,7 @@ void PoseLab::closeEvent(QCloseEvent* event) {
 }
 
 PoseLab::~PoseLab() {
+	inferenceThread.disconnect(ui.openGLvideo->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process);
 	inferenceThread.quit();
 	inferenceThread.wait();
 
@@ -169,7 +170,9 @@ PoseLab::~PoseLab() {
 	}
 
 	mediaThread.quit();
-	mediaThread.wait();
+	while (!mediaThread.isFinished()) {
+		QApplication::processEvents();
+	}
 }
 
 void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous) {

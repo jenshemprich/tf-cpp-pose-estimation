@@ -16,8 +16,8 @@ OpenGlVideoView::OpenGlVideoView(QWidget* parent)
 	connect(surface, &OpenGlVideoSurface::aboutToPresent, this, &OpenGlVideoView::setFrame, Qt::ConnectionType::BlockingQueuedConnection);
 }
 
-OpenGlVideoView::~OpenGlVideoView()
-{
+OpenGlVideoView::~OpenGlVideoView() {
+	disconnect(surface, &OpenGlVideoSurface::aboutToPresent, this, &OpenGlVideoView::setFrame);
 	delete surface;
 }
 
