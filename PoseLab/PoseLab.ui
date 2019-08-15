@@ -84,6 +84,9 @@
         </spacer>
        </item>
        <item>
+        <layout class="QVBoxLayout" name="cameraButtons"/>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QListWidget" name="cameras">
@@ -159,6 +162,9 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="movieButtons"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">

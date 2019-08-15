@@ -36,6 +36,8 @@ signals:
 
 public slots:
 	void currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous);
+	void cameraButtonPressed();
+	void movieButtonPressed();
 	void currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous);
 	void selectMovieFolder();
 	void addSource();

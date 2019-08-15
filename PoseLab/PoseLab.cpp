@@ -111,8 +111,15 @@ PoseLab::PoseLab(QWidget *parent)
 			description = description.mid(7);
 		}
 
-		QListWidgetItem* item = new QListWidgetItem(icon, description, ui.cameras);
-		item->setData(Qt::UserRole, QVariant(cameraInfo.deviceName()));
+		//QListWidgetItem* item = new QListWidgetItem(icon, description, ui.cameras);
+		//item->setData(Qt::UserRole, QVariant(cameraInfo.deviceName()));
+		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
+		button->setObjectName(cameraInfo.deviceName());
+		button->setFixedSize(QSize(64, 64));
+		button->setIconSize(QSize(64, 64));
+		button->setToolTip(description);
+		ui.cameraButtons->addWidget(button);
+		connect(button, &QPushButton::pressed, this, &PoseLab::cameraButtonPressed);
 	}
 	ui.cameras->setVisible(cameras.size() > 0);
 	ui.cameras->setViewMode(cameras.size() == 1 ? QListView::ViewMode::IconMode : QListView::ViewMode::IconMode);
@@ -188,6 +195,24 @@ void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* pr
 	}
 }
 
+void PoseLab::cameraButtonPressed() {
+ 	QString deviceName = sender()->objectName();
+	foreach(const QCameraInfo & cameraInfo, QCameraInfo::availableCameras()) {
+		if (cameraInfo.deviceName() == deviceName) {
+			CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo, mediaThread);
+			showSource(video);
+			break;
+		}
+	}
+}
+
+void PoseLab::movieButtonPressed() {
+	QString path = sender()->objectName();
+	MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
+	video->setPath(path);
+	showSource(video);
+}
+
 void PoseLab::currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous) {
 	if (current) {
 		MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
@@ -214,14 +239,25 @@ void PoseLab::addSource() {
 	if (dialog.exec()) {
 		QFileInfo source = dialog.selectedFiles()[0];
 		QIcon icon = QFileIconProvider().icon(source);
-		QListWidgetItem* item = new QListWidgetItem(icon, nullptr, ui.movies);
-		item->setToolTip(source.baseName());
-		item->setData(Qt::UserRole, QVariant(source.absoluteFilePath()));
-		ui.movies->setVisible(true);
-		ui.movies->setItemSelected(item, true);
-		setFixedHeight(ui.movies, ui.movies->count());
-		// TODO Learn why connected signal isn't emmited
-		currentMovieChanged(item, nullptr);
+		//QListWidgetItem* item = new QListWidgetItem(icon, nullptr, ui.movies);
+		//item->setToolTip(source.baseName());
+		//item->setData(Qt::UserRole, QVariant(source.absoluteFilePath()));
+		//ui.movies->setVisible(true);
+		//ui.movies->setItemSelected(item, true);
+		// setFixedHeight(ui.movies, ui.movies->count());
+
+		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
+		button->setObjectName(source.absoluteFilePath());
+		button->setFixedSize(QSize(64, 64));
+		button->setIconSize(QSize(64, 64));
+		button->setToolTip(source.baseName());
+		ui.movieButtons->addWidget(button);
+		connect(button, &QPushButton::pressed, this, &PoseLab::movieButtonPressed);
+
+		// TODO Resolve code duplication
+		MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
+		video->setPath(source.absolutePath());
+		showSource(video);
 	}
 }
 
