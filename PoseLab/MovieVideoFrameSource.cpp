@@ -18,7 +18,6 @@ void MovieVideoFrameSource::setPath(const QString& path) {
 	this->path = path;
 }
 
-
 void MovieVideoFrameSource::startWork() {
 	mediaPlayer = new QMediaPlayer();
 	const QUrl url = QUrl::fromLocalFile(path);

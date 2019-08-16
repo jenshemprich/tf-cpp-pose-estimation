@@ -30,16 +30,14 @@ public:
 	QButtonGroup inferenceResolutionGroup;
 	QButtonGroup inferenceUpscalenGroup;
 
+	void show();
 
 signals:
 	void aboutToClose();
 
 public slots:
-	void currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous);
 	void cameraButtonPressed();
 	void movieButtonPressed();
-	void currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous);
-	void selectMovieFolder();
 	void addSource();
 
 	void px1();
@@ -57,23 +55,21 @@ public slots:
 protected:
 	void closeEvent(QCloseEvent* event) override;
 
-	void px(int factor);
-	void u(int factor);
+protected:
+	void show(const QString& path);
+	void show(AbstractVideoFrameSource* videoFrameSource);
+	AbstractVideoFrameSource* videoFrameSource;
+	QThread mediaThread;
 
 	std::unique_ptr<PoseEstimator> pose_estimator;
 	TensorMat input;
 	QThread inferenceThread;
-	QThread mediaThread;
 
 	VideoFrameProcessor inference;
 	int inferencePxResizeFactor;
 	int inferenceUpscaleFactor;
-
-	void showSource(AbstractVideoFrameSource* videoFrameSource);
-	void showMovieFolder(const QString& folder);
-	void setFixedHeight(QListView* listView, int itemCount);
-
-	AbstractVideoFrameSource* videoFrameSource;
+	void px(int factor);
+	void u(int factor);
 
 private:
 	Ui::PoseLabClass ui;

@@ -6,14 +6,10 @@
 #include <QThread>
 #include <QButtonGroup>
 #include <QCameraInfo>
-#include <QListWidget>
 #include <QPushButton>
 #include <QFile>
 #include <QFileDialog>
-#include <QMimeDatabase>
-#include <QMimeType>
 #include <QFileIconProvider>
-#include <QScroller>
 #include <QSpinBox>
 #include <QList>
 
@@ -21,6 +17,9 @@
 
 #include "CameraVideoFrameSource.h"
 #include "MovieVideoFrameSource.h"
+
+#include "OpenCVVideoCaptureSource.h"
+#include "OpenCVFFmpegSource.h"
 
 #include "PoseLab.h"
 
@@ -34,10 +33,19 @@ PoseLab::PoseLab(QWidget *parent)
 	, inferenceThread()
 	, inference([this](QVideoFrame& frame) {
 		input.resize(cv::Size(frame.width() / inferencePxResizeFactor, frame.height() / inferencePxResizeFactor));
+
 		// TODO convert directly to CV_32FC3 in TensorMat
-		Mat frameRef(frame.height(), frame.width(), CV_8UC4, frame.bits(), frame.bytesPerLine());
-		cv::Mat  image;
-		cv::cvtColor(frameRef, image, cv::COLOR_BGRA2BGR);
+		Mat frameRef;
+		cv::Mat image;
+		QVideoFrame::PixelFormat pixelFormat = frame.pixelFormat();
+		if (pixelFormat == QVideoFrame::PixelFormat::Format_RGB32) {
+			frameRef = Mat(frame.height(), frame.width(), CV_8UC4, frame.bits(), frame.bytesPerLine());
+			cv::cvtColor(frameRef, image, cv::COLOR_BGRA2BGR);
+		} else if (pixelFormat == QVideoFrame::PixelFormat::Format_BGR24) {
+			frameRef = image = Mat(frame.height(), frame.width(), CV_8UC3, frame.bits(), frame.bytesPerLine());
+		} else {
+			assert(false);
+		}
 
 		input.copyFrom(image);
 		vector<coco::Human> humans = pose_estimator->inference(input.tensor, inferenceUpscaleFactor);
@@ -111,8 +119,6 @@ PoseLab::PoseLab(QWidget *parent)
 			description = description.mid(7);
 		}
 
-		//QListWidgetItem* item = new QListWidgetItem(icon, description, ui.cameras);
-		//item->setData(Qt::UserRole, QVariant(cameraInfo.deviceName()));
 		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
 		button->setObjectName(cameraInfo.deviceName());
 		button->setFixedSize(QSize(64, 64));
@@ -121,32 +127,8 @@ PoseLab::PoseLab(QWidget *parent)
 		ui.cameraButtons->addWidget(button);
 		connect(button, &QPushButton::pressed, this, &PoseLab::cameraButtonPressed);
 	}
-	ui.cameras->setVisible(cameras.size() > 0);
-	ui.cameras->setViewMode(cameras.size() == 1 ? QListView::ViewMode::IconMode : QListView::ViewMode::IconMode);
-	ui.cameras->setStyleSheet("background-color: rgba(0,0,0,0%)");
-
-	// TODO replace hardcoded listview width with automatic layout
-	ui.cameras->setFixedWidth(64 + 8);
-	setFixedHeight(ui.cameras, cameras.size());
-	connect(ui.cameras, &QListWidget::currentItemChanged, this, &PoseLab::currentCameraChanged);
-
-
-	ui.movies->setFixedWidth(64 + 8);
-	QScroller::grabGesture(ui.movies, QScroller::LeftMouseButtonGesture);
-	// single add source
-	ui.movies->setVisible(false);
-	ui.movies->setStyleSheet("background-color: rgba(0,0,0,0%)");
-	connect(ui.movies, &QListWidget::currentItemChanged, this, &PoseLab::currentMovieChanged);
 
 	connect(ui.addSource, &QToolButton::pressed, this, &PoseLab::addSource);
-
-	//if (QFile::exists("../testdata")) {
-	//	showMovieFolder("../testdata");
-	//}
-
-	// TODO Deprecated -> remove related code
-	connect(ui.openMovieFolder, &QPushButton::pressed, this, &PoseLab::selectMovieFolder);
-	ui.openMovieFolder->setVisible(false);
 
 	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
@@ -156,11 +138,6 @@ PoseLab::PoseLab(QWidget *parent)
 
 void PoseLab::closeEvent(QCloseEvent* event) {
 	event->accept();
-
-	//if (videoFrameSource != nullptr) {
-	//	videoFrameSource->end();
-	//	videoFrameSource = nullptr;
-	//}
 
 	emit aboutToClose();
 }
@@ -172,6 +149,10 @@ PoseLab::~PoseLab() {
 
 	if (videoFrameSource != nullptr) {
 		videoFrameSource->end();
+		// TODO videoFrameSource->presentFrame is called once more after calling end() and stopping the timer -> resolve and delete object here
+	}
+
+	if (videoFrameSource != nullptr) {
 		delete videoFrameSource;
 		videoFrameSource = nullptr;
 	}
@@ -180,27 +161,21 @@ PoseLab::~PoseLab() {
 	while (!mediaThread.isFinished()) {
 		QApplication::processEvents();
 	}
+
 }
 
-void PoseLab::currentCameraChanged(QListWidgetItem* current, QListWidgetItem* previous) {
-	if (current) {
-		QString deviceName = current->data(Qt::UserRole).toString();
-		foreach(const QCameraInfo& cameraInfo, QCameraInfo::availableCameras()) {
-			if (cameraInfo.deviceName() == deviceName) {
-				CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo, mediaThread);
-				showSource(video);
-				break;
-			}
-		}
-	}
+void PoseLab::show() {
+	QMainWindow::show();
 }
 
 void PoseLab::cameraButtonPressed() {
  	QString deviceName = sender()->objectName();
+	int i = 0;
 	foreach(const QCameraInfo & cameraInfo, QCameraInfo::availableCameras()) {
 		if (cameraInfo.deviceName() == deviceName) {
-			CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo, mediaThread);
-			showSource(video);
+			// CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo.deviceName(), mediaThread);
+			OpenCVVideoCaptureSource* video = new OpenCVVideoCaptureSource(QString(i), mediaThread);
+			show(video);
 			break;
 		}
 	}
@@ -208,28 +183,7 @@ void PoseLab::cameraButtonPressed() {
 
 void PoseLab::movieButtonPressed() {
 	QString path = sender()->objectName();
-	MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
-	video->setPath(path);
-	showSource(video);
-}
-
-void PoseLab::currentMovieChanged(QListWidgetItem* current, QListWidgetItem* previous) {
-	if (current) {
-		MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
-		video->setPath(current->data(Qt::UserRole).toString());
-		showSource(video);
-	}
-}
-
-void PoseLab::selectMovieFolder() {
-	QFileDialog dialog(this, tr("Open Movie Folder"), "../testdata/");
-	dialog.setFileMode(QFileDialog::AnyFile);
-	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv)"));
-	if (dialog.exec()) {
-		QDir dir = QDir(dialog.selectedFiles()[0]);
-		dir.cdUp();
-		showMovieFolder(dir.absolutePath());
-	}
+	show(path);
 }
 
 void PoseLab::addSource() {
@@ -239,13 +193,6 @@ void PoseLab::addSource() {
 	if (dialog.exec()) {
 		QFileInfo source = dialog.selectedFiles()[0];
 		QIcon icon = QFileIconProvider().icon(source);
-		//QListWidgetItem* item = new QListWidgetItem(icon, nullptr, ui.movies);
-		//item->setToolTip(source.baseName());
-		//item->setData(Qt::UserRole, QVariant(source.absoluteFilePath()));
-		//ui.movies->setVisible(true);
-		//ui.movies->setItemSelected(item, true);
-		// setFixedHeight(ui.movies, ui.movies->count());
-
 		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
 		button->setObjectName(source.absoluteFilePath());
 		button->setFixedSize(QSize(64, 64));
@@ -253,40 +200,18 @@ void PoseLab::addSource() {
 		button->setToolTip(source.baseName());
 		ui.movieButtons->addWidget(button);
 		connect(button, &QPushButton::pressed, this, &PoseLab::movieButtonPressed);
-
-		// TODO Resolve code duplication
-		MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
-		video->setPath(source.absolutePath());
-		showSource(video);
+		show(source.absoluteFilePath());
 	}
 }
 
-void PoseLab::showMovieFolder(const QString& folder) {
-	ui.movies->clear();
-	QDir dir = QDir(folder);
-	dir.setNameFilters(QStringList() << "*.mpg" << "*.mkv" << "*.3gp" << "*.mp4" << "*.wmv");
-	QFileInfoList list = dir.entryInfoList();
-	for (int i = 0; i < list.size(); ++i) {
-		QFileInfo fileInfo = list.at(i);
-		QIcon icon = QFileIconProvider().icon(fileInfo);
-		QListWidgetItem* item = new QListWidgetItem(icon, fileInfo.baseName().replace("_"," "), ui.movies);
-		item->setToolTip(fileInfo.baseName());
-		item->setData(Qt::UserRole, QVariant(fileInfo.absoluteFilePath()));
-		setFixedHeight(ui.movies, ui.movies->count());
-		ui.movies->setVisible(true);
-	}
+void PoseLab::show(const QString& path) {
+	// MovieVideoFrameSource* video = new MovieVideoFrameSource(mediaThread);
+	OpenCVFFMpegSource* video = new OpenCVFFMpegSource(mediaThread);
+	video->setPath(path);
+	show(video);
 }
 
-void PoseLab::setFixedHeight(QListView* listView, int itemCount) {
-	int items = (itemCount < ui.cameras->model()->rowCount()
-		? itemCount
-		: ui.cameras->model()->rowCount()
-	);
-	int heightHint = ui.cameras->sizeHintForRow(0);
-	listView->setFixedHeight(items * heightHint);
-}
-
-void PoseLab::showSource(AbstractVideoFrameSource* source) {
+void PoseLab::show(AbstractVideoFrameSource* source) {
 	if (videoFrameSource != nullptr) {
 		videoFrameSource->end();
 		videoFrameSource->deleteLater();

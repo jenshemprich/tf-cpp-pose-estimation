@@ -29,6 +29,4 @@ void AbstractVideoFrameSource::start() {
 void AbstractVideoFrameSource::end() {
 	emit end_();
 	disconnect(this, &AbstractVideoFrameSource::end_, this, &AbstractVideoFrameSource::endWork);
-	// TODO Application won't exit after playing second movie
-	// - same problem as in early dev when worker hadn't processed events until the media object was deleted
 }

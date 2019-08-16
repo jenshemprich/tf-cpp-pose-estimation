@@ -122,14 +122,17 @@ void OpenGlVideoView::setFrame(QVideoFrame& frame) {
 		videoTexture->allocateStorage();
 	}
 
-	// UPLOAD THE CPU BUFFER TO THE GPU TEXTURE
-	// COPY FRAME BUFFER TEXTURE FROM GPU TO LOCAL CPU BUFFER
 	QVideoFrame::PixelFormat format = frame.pixelFormat();
-	// if (format == QVideoFrame::Format_ARGB32) {
 	if (format == QVideoFrame::Format_RGB32) {
-			unsigned int bytesPerSample = frame.bytesPerLine() / frame.width() / 4;
+		unsigned int bytesPerSample = frame.bytesPerLine() / frame.width() / 4;
 		if (bytesPerSample == sizeof(unsigned char)) {
 			videoTexture->setData(QOpenGLTexture::BGRA, QOpenGLTexture::UInt8,
+				(const void*) frame.bits());
+		}
+	} else if (format == QVideoFrame::Format_BGR24) {
+		unsigned int bytesPerSample = frame.bytesPerLine() / frame.width() / 3;
+		if (bytesPerSample == sizeof(unsigned char)) {
+			videoTexture->setData(QOpenGLTexture::BGR, QOpenGLTexture::UInt8,
 				(const void*) frame.bits());
 		}
 	}

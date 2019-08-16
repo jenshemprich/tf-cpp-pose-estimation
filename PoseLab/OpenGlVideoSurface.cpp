@@ -13,7 +13,7 @@ OpenGlVideoSurface::OpenGlVideoSurface(OpenGlVideoView* display)
 QList<QVideoFrame::PixelFormat> OpenGlVideoSurface::supportedPixelFormats(QAbstractVideoBuffer::HandleType type) const {
 	if (type == QAbstractVideoBuffer::NoHandle) {
 		// TODO QCamera provides RGB32 only but RGB24 would be more than sufficient
-		return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_RGB32;
+		return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_RGB32 << QVideoFrame::Format_BGR24;
 	}
 	else {
 		return QList<QVideoFrame::PixelFormat>();

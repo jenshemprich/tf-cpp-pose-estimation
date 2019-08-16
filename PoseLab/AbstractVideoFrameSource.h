@@ -30,6 +30,6 @@ protected slots:
 
 protected:
 	QAbstractVideoSurface* surface;
-private:
 	QThread& worker;
+private:
 };

@@ -7,13 +7,13 @@
 
 class CameraVideoFrameSource : public AbstractVideoFrameSource {
 public:
-	CameraVideoFrameSource(const QCameraInfo& cameraInfo, QThread& worker);
+	CameraVideoFrameSource(const QString& deviceName, QThread& worker);
 	virtual ~CameraVideoFrameSource();
 
 	virtual void startWork() override;
 	virtual void endWork() override;
 
 private:
-	const QCameraInfo cameraInfo;
+	const QString deviceName;
 	QCamera* camera;
 };

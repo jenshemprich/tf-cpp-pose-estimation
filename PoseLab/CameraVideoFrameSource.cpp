@@ -2,8 +2,8 @@
 
 #include "CameraVideoFrameSource.h"
 
-CameraVideoFrameSource::CameraVideoFrameSource(const QCameraInfo& cameraInfo, QThread& worker)
-	: AbstractVideoFrameSource(worker), cameraInfo(cameraInfo), camera(nullptr)
+CameraVideoFrameSource::CameraVideoFrameSource(const QString& deviceName, QThread& worker)
+	: AbstractVideoFrameSource(worker), deviceName(deviceName), camera(nullptr)
 {
 }
 
@@ -15,7 +15,7 @@ CameraVideoFrameSource::~CameraVideoFrameSource() {
 }
 
 void CameraVideoFrameSource::startWork() {
-	camera = new QCamera(cameraInfo);
+	camera = new QCamera(deviceName.toLocal8Bit());
 	QCameraViewfinderSettings settings(camera->viewfinderSettings());
 	settings.setResolution(640, 480);
 	camera->setViewfinderSettings(settings);
