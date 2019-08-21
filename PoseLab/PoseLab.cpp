@@ -174,9 +174,11 @@ void PoseLab::cameraButtonPressed() {
 	foreach(const QCameraInfo & cameraInfo, QCameraInfo::availableCameras()) {
 		if (cameraInfo.deviceName() == deviceName) {
 			// CameraVideoFrameSource* video = new CameraVideoFrameSource(cameraInfo.deviceName(), mediaThread);
-			OpenCVVideoCaptureSource* video = new OpenCVVideoCaptureSource(QString(i), mediaThread);
+			OpenCVVideoCaptureSource* video = new OpenCVVideoCaptureSource(QString::number(i), mediaThread);
 			show(video);
 			break;
+		} else {
+			i++;
 		}
 	}
 }
