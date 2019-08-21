@@ -43,10 +43,10 @@ bool OpenGlVideoSurface::present(const QVideoFrame& frame) {
 
 bool OpenGlVideoSurface::start(const QVideoSurfaceFormat& surfaceFormat) {
 	format = surfaceFormat;
+	emit surfaceFormatChanged(surfaceFormat);
 	return true;
 }
 
-void OpenGlVideoSurface::stop()
-{
+void OpenGlVideoSurface::stop() {
 }
 

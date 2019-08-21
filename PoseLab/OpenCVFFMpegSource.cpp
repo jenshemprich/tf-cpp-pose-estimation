@@ -2,6 +2,7 @@
 
 #include <QVideoFrame>
 #include <QAbstractVideoSurface>
+#include <QVideoSurfaceFormat>
 
 #include "OpenCVVideoBuffer.h"
 
@@ -30,6 +31,10 @@ void OpenCVFFMpegSource::setPath(const QString& path) {
 void OpenCVFFMpegSource::startWork() {
 	videoCapture = new VideoCapture;
 	if (videoCapture->open(path.toStdString())) {
+		*videoCapture >> frame;
+		QVideoSurfaceFormat surfaceFormat(QSize(frame.cols, frame.rows), QVideoFrame::PixelFormat::Format_BGR24, QAbstractVideoBuffer::NoHandle);
+		surface->start(surfaceFormat);
+		present(frame);
 		timer = new QTimer(this);
 		timer->moveToThread(QThread::currentThread());
 		connect(timer, &QTimer::timeout, this, &OpenCVFFMpegSource::presentFrame);
@@ -43,10 +48,14 @@ void OpenCVFFMpegSource::presentFrame() {
 	assert(videoCapture);
 	if (videoCapture) {
 		*videoCapture >> frame;
-		OpenCVVideoBuffer* buffer = new OpenCVVideoBuffer(frame);
-		QVideoFrame videoFrame(buffer, QSize(frame.cols, frame.rows), QVideoFrame::PixelFormat::Format_BGR24);
-		surface->present(videoFrame);
+		present(frame);
 	}
+}
+
+void OpenCVFFMpegSource::present(cv::Mat& frame) {
+	OpenCVVideoBuffer* buffer = new OpenCVVideoBuffer(frame);
+	QVideoFrame videoFrame(buffer, QSize(frame.cols, frame.rows), QVideoFrame::PixelFormat::Format_BGR24);
+	surface->present(videoFrame);
 }
 
 void OpenCVFFMpegSource::endWork() {
@@ -55,6 +64,7 @@ void OpenCVFFMpegSource::endWork() {
 		disconnect(timer, &QTimer::timeout, this, &OpenCVFFMpegSource::presentFrame);
 		delete timer;
 		timer = nullptr;
+		surface->stop();
 	}
 
 	if (videoCapture) {

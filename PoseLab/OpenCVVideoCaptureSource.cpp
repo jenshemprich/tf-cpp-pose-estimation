@@ -1,7 +1,9 @@
 #include "pch.h"
 
+#include <QSize>
 #include <QVideoFrame>
 #include <QAbstractVideoSurface>
+#include <QVideoSurfaceFormat>
 
 #include "OpenCVVideoBuffer.h"
 
@@ -25,6 +27,10 @@ void OpenCVVideoCaptureSource::startWork() { // Ignored
 	videoCapture = new VideoCapture;
 	int device = deviceName.toInt();
 	if (videoCapture->open(device, CAP_DSHOW)) {
+		*videoCapture >> frame;
+		QVideoSurfaceFormat surfaceFormat(QSize(frame.cols, frame.rows), QVideoFrame::PixelFormat::Format_BGR24, QAbstractVideoBuffer::NoHandle);
+		surface->start(surfaceFormat);
+		present(frame);
 		timer = new QTimer(this);
 		timer->moveToThread(QThread::currentThread());
 		connect(timer, &QTimer::timeout, this, &OpenCVVideoCaptureSource::presentFrame);
@@ -38,11 +44,15 @@ void OpenCVVideoCaptureSource::presentFrame() {
 	assert(videoCapture);
 	if (videoCapture) {
 		*videoCapture >> frame;
-		OpenCVVideoBuffer* buffer = new OpenCVVideoBuffer(frame);
-		QVideoFrame videoFrame(buffer, QSize(frame.cols, frame.rows), QVideoFrame::PixelFormat::Format_BGR24);
-		surface->present(videoFrame);
+		present(frame);
 		timer->start();
 	}
+}
+
+void OpenCVVideoCaptureSource::present(cv::Mat& frame) {
+	OpenCVVideoBuffer* buffer = new OpenCVVideoBuffer(frame);
+	QVideoFrame videoFrame(buffer, QSize(frame.cols, frame.rows), QVideoFrame::PixelFormat::Format_BGR24);
+	surface->present(videoFrame);
 }
 
 void OpenCVVideoCaptureSource::endWork() { // Ignored
@@ -51,6 +61,7 @@ void OpenCVVideoCaptureSource::endWork() { // Ignored
 		disconnect(timer, &QTimer::timeout, this, &OpenCVVideoCaptureSource::presentFrame);
 		delete timer;
 		timer = nullptr;
+		surface->stop();
 	}
 
 	if (videoCapture) {

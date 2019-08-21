@@ -32,6 +32,7 @@ bool wasInitialized() const {
 protected slots:
 	void setFrame(QVideoFrame& frame);
 	//void setFrame(QImage frame);
+	void setSurfaceFormat(const QVideoSurfaceFormat& format);
 
 protected:
 	void initializeGL();
@@ -46,7 +47,5 @@ protected:
 	int localWidth, localHeight;
 	qreal devicePixelRatio;
 
-	bool hasHeightForWidth() const override;
-	int heightForWidth(int width) const override;
 	int videoWidth, videoHeight;
 };

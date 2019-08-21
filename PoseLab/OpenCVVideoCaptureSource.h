@@ -26,4 +26,6 @@ private:
 	QTimer* timer;
 	cv::VideoCapture* videoCapture;
 	cv::Mat frame;
+
+	void present(cv::Mat& frame);
 };

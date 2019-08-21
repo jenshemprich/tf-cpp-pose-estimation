@@ -13,16 +13,25 @@ OpenGlVideoView::OpenGlVideoView(QWidget* parent)
 	, videoWidth(640), videoHeight(360)
 {
 	// TODO Would block if same thread 
+	connect(surface, &OpenGlVideoSurface::surfaceFormatChanged, this, &OpenGlVideoView::setSurfaceFormat);
 	connect(surface, &OpenGlVideoSurface::aboutToPresent, this, &OpenGlVideoView::setFrame, Qt::ConnectionType::BlockingQueuedConnection);
 }
 
 OpenGlVideoView::~OpenGlVideoView() {
+	disconnect(surface, &OpenGlVideoSurface::surfaceFormatChanged, this, &OpenGlVideoView::setSurfaceFormat);
 	disconnect(surface, &OpenGlVideoSurface::aboutToPresent, this, &OpenGlVideoView::setFrame);
 	delete surface;
 }
 
 
 // OpenGL code based on https://hackaday.io/project/28720-real-time-random-pixel-shuffling/details
+
+void OpenGlVideoView::setSurfaceFormat(const QVideoSurfaceFormat& format) {
+	videoWidth = format.frameWidth();
+	videoHeight = format.frameHeight();
+
+	setMinimumSize(videoWidth, videoHeight);
+}
 
 void OpenGlVideoView::initializeGL() {
 	// initialize our gl calls and set the clear color
@@ -137,11 +146,6 @@ void OpenGlVideoView::setFrame(QVideoFrame& frame) {
 		}
 	}
 
-	videoWidth = frame.width();
-	videoHeight = frame.height();
-
-	setMinimumSize(videoWidth, videoHeight);
-
 	update();
 }
 
@@ -194,12 +198,4 @@ void OpenGlVideoView::paintGL() {
 			program.release();
 		}
 	}
-}
-
-bool OpenGlVideoView::hasHeightForWidth() const {
-	return true;
-}
-
-int OpenGlVideoView::heightForWidth(int width) const {
-	return width * videoHeight / videoWidth;
 }
