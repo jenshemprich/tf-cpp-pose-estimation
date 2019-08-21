@@ -68,16 +68,10 @@ PoseLab::PoseLab(QWidget *parent)
 	pose_estimator->setGaussKernelSize(25);
 	inferenceThread.setPriority(QThread::Priority::LowestPriority);
 	inferenceThread.start();
-	inferenceThread.connect(ui.openGLvideo->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
+	inferenceThread.connect(ui.video->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
 	inference.moveToThread(&inferenceThread);
 
 	mediaThread.start();
-
-	// TODO Move to OpenGLVideo constructor, but doesn't have any effect there
-	QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-	policy.setHeightForWidth(true);
-	policy.setWidthForHeight(true);
-	ui.openGLvideo->setSizePolicy(policy);
 
 	inferenceResolutionGroup.addButton(ui.px1);
 	inferenceResolutionGroup.addButton(ui.px2);
@@ -121,7 +115,6 @@ PoseLab::PoseLab(QWidget *parent)
 
 		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
 		button->setObjectName(cameraInfo.deviceName());
-		button->setFixedSize(QSize(64, 64));
 		button->setIconSize(QSize(64, 64));
 		button->setToolTip(description);
 		ui.cameraButtons->addWidget(button);
@@ -143,7 +136,7 @@ void PoseLab::closeEvent(QCloseEvent* event) {
 }
 
 PoseLab::~PoseLab() {
-	inferenceThread.disconnect(ui.openGLvideo->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process);
+	inferenceThread.disconnect(ui.video->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process);
 	inferenceThread.quit();
 	inferenceThread.wait();
 
@@ -197,7 +190,6 @@ void PoseLab::addSource() {
 		QIcon icon = QFileIconProvider().icon(source);
 		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
 		button->setObjectName(source.absoluteFilePath());
-		button->setFixedSize(QSize(64, 64));
 		button->setIconSize(QSize(64, 64));
 		button->setToolTip(source.baseName());
 		ui.movieButtons->addWidget(button);
@@ -220,7 +212,7 @@ void PoseLab::show(AbstractVideoFrameSource* source) {
 	}
 
 	videoFrameSource = source;
-	videoFrameSource->setTarget(ui.openGLvideo->surface);
+	videoFrameSource->setTarget(ui.video->surface);
 	videoFrameSource->start();
 }
 
