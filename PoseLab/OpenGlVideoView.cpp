@@ -25,20 +25,20 @@ OpenGlVideoView::~OpenGlVideoView() {
 // OpenGL code based on https://hackaday.io/project/28720-real-time-random-pixel-shuffling/details
 
 void OpenGlVideoView::initializeGL() {
-	// INITIALIZE OUR GL CALLS AND SET THE CLEAR COLOR
+	// initialize our gl calls and set the clear color
 	initializeOpenGLFunctions();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	// CREATE THE VERTEX ARRAY OBJECT FOR FEEDING VERTICES TO OUR SHADER PROGRAMS
+	// create the vertex array object for feeding vertices to our shader programs
 	vertexArrayObject.create();
 	vertexArrayObject.bind();
 
-	// CREATE VERTEX BUFFER TO HOLD CORNERS OF QUADRALATERAL
+	// create vertex buffer to hold corners of quadralateral
 	quadVertexBuffer = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
 	quadVertexBuffer.create();
 	quadVertexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
 	if (quadVertexBuffer.bind()) {
-		// ALLOCATE THE VERTEX BUFFER FOR HOLDING THE FOUR CORNERS OF A RECTANGLE
+		// allocate the vertex buffer for holding the four corners of a rectangle
 		quadVertexBuffer.allocate(16 * sizeof(float));
 		float* buffer = (float*)quadVertexBuffer.map(QOpenGLBuffer::WriteOnly);
 		if (buffer) {
@@ -66,7 +66,7 @@ void OpenGlVideoView::initializeGL() {
 		quadVertexBuffer.release();
 	}
 
-	// CREATE INDEX BUFFER TO ORDERINGS OF VERTICES FORMING POLYGON
+	// create index buffer to orderings of vertices forming polygon
 	quadIndexBuffer = QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
 	quadIndexBuffer.create();
 	quadIndexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
@@ -88,7 +88,7 @@ void OpenGlVideoView::initializeGL() {
 		quadIndexBuffer.release();
 	}
 
-	// CREATE SHADER FOR SHOWING THE VIDEO NOT AVAILABLE IMAGE
+	// create shader for showing the video not available image
 	setlocale(LC_NUMERIC, "C");
 	if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Resources/Shaders/identity_vertex_shader.glsl")) {
 		qDebug() << QString("Failed to load vertex shader.");
@@ -103,7 +103,7 @@ void OpenGlVideoView::initializeGL() {
 void OpenGlVideoView::setFrame(QVideoFrame& frame) {
 	makeCurrent();
 
-	// SEE IF WE NEED A NEW TEXTURE TO HOLD THE INCOMING VIDEO FRAME
+	// see if we need a new texture to hold the incoming video frame
 	if (!videoTexture ||
 		videoTexture->width() != frame.width() ||
 		videoTexture->height() != frame.height()) {
@@ -112,7 +112,7 @@ void OpenGlVideoView::setFrame(QVideoFrame& frame) {
 			delete videoTexture;
 		}
 
-		// CREATE THE GPU SIDE TEXTURE BUFFER TO HOLD THE INCOMING VIDEO
+		// create the gpu side texture buffer to hold the incoming video
 		videoTexture = new QOpenGLTexture(QOpenGLTexture::Target2D);
 		videoTexture->setSize(frame.width(), frame.height());
 		videoTexture->setFormat(QOpenGLTexture::RGBA32F);
@@ -139,6 +139,7 @@ void OpenGlVideoView::setFrame(QVideoFrame& frame) {
 
 	videoWidth = frame.width();
 	videoHeight = frame.height();
+
 	setMinimumSize(videoWidth, videoHeight);
 
 	update();
@@ -155,21 +156,32 @@ void OpenGlVideoView::resizeGL(int w, int h) {
 }
 
 void OpenGlVideoView::paintGL() {
-	// SET THE VIEW PORT
-	glViewport(0, 0, localWidth, localHeight);
-	//  skip glClear since the screen buffer is completely replaced by video frame, and depth is unused
+	// set the video aspect
 
-	// MAKE SURE WE HAVE A TEXTURE TO SHOW
+	const float aspectVideo = float(videoWidth) / float(videoHeight);
+	const float aspectGl = float(localWidth) / float(localHeight);
+
+	if (aspectGl < aspectVideo) {
+		const float y = (localHeight - localHeight * aspectGl / aspectVideo) / 2;
+		glViewport(0, y, localWidth, localHeight * aspectGl / aspectVideo);
+	} else {
+		const float x = (localWidth - localWidth * aspectVideo / aspectGl) / 2;
+		glViewport(x, 0, localWidth * aspectVideo / aspectGl, localHeight);
+	}
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// make sure we have a texture to show
 	if (videoTexture) {
 		if (program.bind()) {
 			if (quadVertexBuffer.bind()) {
 				if (quadIndexBuffer.bind()) {
-					// SET THE ACTIVE TEXTURE ON THE GPU
+					// set the active texture on the gpu
 					glActiveTexture(GL_TEXTURE0);
 					videoTexture->bind();
 					program.setUniformValue("qt_texture", 0);
 
-					// TELL OPENGL PROGRAMMABLE PIPELINE HOW TO LOCATE VERTEX POSITION DATA
+					// tell opengl programmable pipeline how to locate vertex position data
 					program.setAttributeBuffer("qt_vertex", GL_FLOAT, 0, 4, 4 * sizeof(float));
 					program.enableAttributeArray("qt_vertex");
 
