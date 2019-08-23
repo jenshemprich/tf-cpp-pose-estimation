@@ -2,19 +2,24 @@
 
 #include <QDesktopwidget>
 #include <QScreen>
+#include <QPainter>
 
+#include "OverlayPainter.h"
 #include "OpenGlVideoSurface.h"
 #include "OpenGlVideoView.h"
 
 OpenGlVideoView::OpenGlVideoView(QWidget* parent)
 	: QOpenGLWidget(parent)
 	, surface(new OpenGlVideoSurface(this))
+	, overlay(nullptr)
 	, videoTexture(nullptr)
 	, videoWidth(640), videoHeight(360)
 {
 	// TODO Would block if same thread 
 	connect(surface, &OpenGlVideoSurface::surfaceFormatChanged, this, &OpenGlVideoView::setSurfaceFormat);
 	connect(surface, &OpenGlVideoSurface::aboutToPresent, this, &OpenGlVideoView::setFrame, Qt::ConnectionType::BlockingQueuedConnection);
+
+	setAutoFillBackground(false);
 }
 
 OpenGlVideoView::~OpenGlVideoView() {
@@ -33,6 +38,10 @@ void OpenGlVideoView::setSurfaceFormat(const QVideoSurfaceFormat& format) {
 	setMinimumSize(videoWidth, videoHeight);
 }
 
+void OpenGlVideoView::setOverlay(OverlayPainter& overlay) {
+	this->overlay = &overlay;
+}
+
 void OpenGlVideoView::initializeGL() {
 	// initialize our gl calls and set the clear color
 	initializeOpenGLFunctions();
@@ -40,7 +49,6 @@ void OpenGlVideoView::initializeGL() {
 
 	// create the vertex array object for feeding vertices to our shader programs
 	vertexArrayObject.create();
-	vertexArrayObject.bind();
 
 	// create vertex buffer to hold corners of quadralateral
 	quadVertexBuffer = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
@@ -153,7 +161,9 @@ void OpenGlVideoView::resizeGL(int w, int h) {
 	// Get the Desktop Widget so that we can get information about multiple monitors connected to the system.
 	QDesktopWidget* dkWidget = QApplication::desktop();
 	QList<QScreen*> screenList = QGuiApplication::screens();
-	qreal devicePixelRatio = screenList[dkWidget->screenNumber(this)]->devicePixelRatio();
+	devicePixelRatio = screenList[dkWidget->screenNumber(this)]->devicePixelRatio();
+	height = h;
+	width = w;
 	localHeight = h * devicePixelRatio;
 	localWidth = w * devicePixelRatio;
 	QOpenGLWidget::resizeGL(w, h);
@@ -172,8 +182,6 @@ void OpenGlVideoView::paintGL() {
 		const float x = (localWidth - localWidth * aspectVideo / aspectGl) / 2;
 		glViewport(x, 0, localWidth * aspectVideo / aspectGl, localHeight);
 	}
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// make sure we have a texture to show
 	if (videoTexture) {
@@ -197,5 +205,11 @@ void OpenGlVideoView::paintGL() {
 			}
 			program.release();
 		}
+	}
+
+	if (overlay) {
+		overlay->begin(this);
+		overlay->paint();
+		overlay->end();
 	}
 }

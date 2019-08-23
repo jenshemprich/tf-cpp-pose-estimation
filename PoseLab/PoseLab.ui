@@ -25,7 +25,7 @@
       <x>10</x>
       <y>20</y>
       <width>601</width>
-      <height>531</height>
+      <height>770</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="mainLayout">
@@ -136,50 +136,6 @@
          <verstretch>1</verstretch>
         </sizepolicy>
        </property>
-       <widget class="QLabel" name="overlayTest">
-        <property name="geometry">
-         <rect>
-          <x>50</x>
-          <y>100</y>
-          <width>331</width>
-          <height>311</height>
-         </rect>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="pixmap">
-         <pixmap resource="PoseLab.qrc">:/Resources/logo-ps.png</pixmap>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::NoTextInteraction</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="fps">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>50</y>
-          <width>121</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>10.2 FPS </string>
-        </property>
-       </widget>
       </widget>
      </item>
      <item>
@@ -214,7 +170,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="pxCenter">
          <item>
           <spacer name="horizontalSpacer_2">
            <property name="orientation">
@@ -232,48 +188,7 @@
           </spacer>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QToolButton" name="px1">
-             <property name="text">
-              <string>1</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="px2">
-             <property name="text">
-              <string>2</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="px4">
-             <property name="text">
-              <string>4</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="px8">
-             <property name="text">
-              <string>8</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QVBoxLayout" name="pxValues"/>
          </item>
          <item>
           <spacer name="horizontalSpacer">
@@ -310,7 +225,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QHBoxLayout" name="uCenter">
          <item>
           <spacer name="horizontalSpacer_3">
            <property name="orientation">
@@ -328,48 +243,7 @@
           </spacer>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <item>
-            <widget class="QToolButton" name="u1">
-             <property name="text">
-              <string>1</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="u2">
-             <property name="text">
-              <string>2</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="u4">
-             <property name="text">
-              <string>4</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="u8">
-             <property name="text">
-              <string>8</string>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QVBoxLayout" name="uValues"/>
          </item>
          <item>
           <spacer name="horizontalSpacer_4">

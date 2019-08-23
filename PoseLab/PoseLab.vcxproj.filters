@@ -75,6 +75,15 @@
     <ClCompile Include="OpenCVFFMpegSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OverlayPainter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -87,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OpenCVVideoBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayPainter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -126,6 +138,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="OpenCVFFMpegSource.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OverlayElement.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OverlayText.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

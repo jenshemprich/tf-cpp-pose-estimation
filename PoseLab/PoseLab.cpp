@@ -18,6 +18,7 @@
 #include "CameraVideoFrameSource.h"
 #include "MovieVideoFrameSource.h"
 
+#include "OverlayPainter.h"
 #include "OpenCVVideoCaptureSource.h"
 #include "OpenCVFFmpegSource.h"
 
@@ -60,6 +61,15 @@ PoseLab::PoseLab(QWidget *parent)
 	, inferenceUpscalenGroup(this)
 	, mediaThread()
 	, videoFrameSource(nullptr)
+
+	, surfacePixels(OverlayElement::Top, this)
+	, inferencePixels(OverlayElement::Top, this)
+	, inferenceUpscale(OverlayElement::Top, this)
+	, convolutionSize(OverlayElement::Top, this)
+
+	, inferenceDuration(OverlayElement::Bottom, this)
+	, postProcessingDuration(OverlayElement::Bottom, this)
+	, humanPartsGenerationDuration(OverlayElement::Bottom, this)
 {
 	ui.setupUi(this);
 	centralWidget()->setLayout(ui.mainLayout);
@@ -71,30 +81,29 @@ PoseLab::PoseLab(QWidget *parent)
 	inferenceThread.connect(ui.video->surface, &OpenGlVideoSurface::frameArrived, &inference, &VideoFrameProcessor::process, Qt::ConnectionType::BlockingQueuedConnection);
 	inference.moveToThread(&inferenceThread);
 
-	mediaThread.start();
-
-	inferenceResolutionGroup.addButton(ui.px1);
-	inferenceResolutionGroup.addButton(ui.px2);
-	inferenceResolutionGroup.addButton(ui.px4);
-	inferenceResolutionGroup.addButton(ui.px8);
-
 	// TODO select check button with default value (px1) - derive from tensor mat
-	connect(ui.px1, &QToolButton::clicked, this, &PoseLab::px1);
-	connect(ui.px2, &QToolButton::clicked, this, &PoseLab::px2);
-	connect(ui.px4, &QToolButton::clicked, this, &PoseLab::px4);
-	connect(ui.px8, &QToolButton::clicked, this, &PoseLab::px8);
 
-	inferenceUpscalenGroup.addButton(ui.u1);
-	inferenceUpscalenGroup.addButton(ui.u2);
-	inferenceUpscalenGroup.addButton(ui.u4);
-	inferenceUpscalenGroup.addButton(ui.u8);
+	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "1", [this]() {	px(1); });
+	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "2", [this]() {	px(2); });
+	// TODO coco parts are offset from gt - possibly px not dividable by 16
+	//newToolbarButton(ui.pxValues, inferenceResolutionGroup, "3", [this]() { px(3); });
+	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "4", [this]() {	px(4); });
+	//newToolbarButton(ui.pxValues, inferenceResolutionGroup, "5", [this]() { px(5); });
+	//newToolbarButton(ui.pxValues, inferenceResolutionGroup, "6", [this]() { px(6); });
+	//newToolbarButton(ui.pxValues, inferenceResolutionGroup, "7", [this]() { px(7); });
+	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "8", [this]() { px(8); });
+
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "1", [this]() { u(1); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "2", [this]() { u(2); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "3", [this]() { u(3); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "4", [this]() { u(4); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "5", [this]() { u(5); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "6", [this]() { u(6); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "7", [this]() { u(7); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "8", [this]() { u(8); });
 
 	// TODO select check button with default value (u4) - derive from field
-	connect(ui.u1, &QToolButton::clicked, this, &PoseLab::u1);
-	connect(ui.u2, &QToolButton::clicked, this, &PoseLab::u2);
-	connect(ui.u4, &QToolButton::clicked, this, &PoseLab::u4);
-	connect(ui.u8, &QToolButton::clicked, this, &PoseLab::u8);
-
+	
 	connect(ui.gaussKernelSize, qOverload<int>(&QSpinBox::valueChanged), this, &PoseLab::setGaussKernelSize);
 
 	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
@@ -126,7 +135,32 @@ PoseLab::PoseLab(QWidget *parent)
 	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
 	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
 	// TODO report issue @ https://github.com/ColinDuquesnoy/QDarkStyleSheet
-	ui.overlayTest->setStyleSheet("background-color: rgba(0,0,0,0%)");
+	// ui.overlayTest->setStyleSheet("background-color: rgba(0,0,0,0%)");
+	
+	ui.video->setOverlay(overlay);
+	overlay.add(surfacePixels);
+	overlay.add(inferencePixels);
+	overlay.add(inferenceUpscale);
+	overlay.add(convolutionSize);
+
+	overlay.add(inferenceDuration);
+	overlay.add(postProcessingDuration);
+	overlay.add(humanPartsGenerationDuration);
+
+	// TODO value update
+	surfacePixels.setText("surface px=640x352");
+	inferencePixels.setText("inference px=160x88");
+	// TODO model selection
+	// TODO result tensor
+	inferenceUpscale.setText("upscale=8");
+	convolutionSize.setText("conv2D size=25");
+
+	inferenceDuration.setText("T_inf=987ms");
+	postProcessingDuration.setText("T_post=632ms");
+	humanPartsGenerationDuration.setText("T_hum=768ms");
+	// TODO fps
+
+	mediaThread.start();
 }
 
 void PoseLab::closeEvent(QCloseEvent* event) {
@@ -184,7 +218,7 @@ void PoseLab::movieButtonPressed() {
 void PoseLab::addSource() {
 	QFileDialog dialog(this, tr("Open Video Source"), "../testdata/");
 	dialog.setFileMode(QFileDialog::AnyFile);
-	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv)"));
+	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv *.webm)"));
 	if (dialog.exec()) {
 		QFileInfo source = dialog.selectedFiles()[0];
 		QIcon icon = QFileIconProvider().icon(source);
@@ -220,22 +254,21 @@ void PoseLab::px(int factor) {
 	inferencePxResizeFactor = factor;
 }
 
-void PoseLab::px1() { px(1); }
-void PoseLab::px2() { px(2); }
-void PoseLab::px4() { px(4); }
-void PoseLab::px8() { px(8); }
-
 void PoseLab::u(int factor) {
 	inferenceUpscaleFactor = factor;
 }
 
-void PoseLab::u1() { u(1); }
-void PoseLab::u2() { u(2); }
-void PoseLab::u4() { u(4); }
-void PoseLab::u8() { u(8); }
+QToolButton* PoseLab::newToolbarButton(QLayout * layout, QButtonGroup& group, const QString& text, const std::function<void()>& pressed) {
+	QToolButton* button = new QToolButton(this);
+	button->setText(text);
+	button->setFont(ui.centralWidget->window()->font());
+	button->setCheckable(true);
+	group.addButton(button);
+	layout->addWidget(button);
+	connect(button, &QToolButton::pressed, this, pressed);
+	return button;
+}
 
 void PoseLab::setGaussKernelSize(int newSize) {
 	pose_estimator->setGaussKernelSize(newSize);
 }
-
-

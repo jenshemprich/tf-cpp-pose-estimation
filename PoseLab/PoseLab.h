@@ -7,10 +7,13 @@
 #include <QFile>
 #include <QThread>
 #include <QButtonGroup>
+#include <QToolButton>
 
 #include <PoseEstimation/PoseEstimator.h>
 #include <PoseEstimation/TensorMat.h>
 
+#include "OverlayPainter.h"
+#include "OverlayText.h"
 #include "OpenGlVideoSurface.h"
 #include "OpenGlVideoView.h"
 #include "VideoFrameProcessor.h"
@@ -40,16 +43,6 @@ public slots:
 	void movieButtonPressed();
 	void addSource();
 
-	void px1();
-	void px2();
-	void px4();
-	void px8();
-
-	void u1();
-	void u2();
-	void u4();
-	void u8();
-
 	void setGaussKernelSize(int newSize);
 
 protected:
@@ -70,6 +63,19 @@ protected:
 	int inferenceUpscaleFactor;
 	void px(int factor);
 	void u(int factor);
+
+	OverlayPainter overlay;
+
+	OverlayText surfacePixels;
+	OverlayText inferencePixels;
+	OverlayText inferenceUpscale;
+	OverlayText convolutionSize;
+
+	OverlayText inferenceDuration;
+	OverlayText postProcessingDuration;
+	OverlayText humanPartsGenerationDuration;
+
+	QToolButton* newToolbarButton(QLayout * layout, QButtonGroup& group, const QString& text, const std::function<void()>& pressed);
 
 private:
 	Ui::PoseLabClass ui;

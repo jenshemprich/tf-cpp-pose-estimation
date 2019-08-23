@@ -9,6 +9,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
+class OverlayPainter;
 class OpenGlVideoSurface;
 
 class OpenGlVideoView : public QOpenGLWidget, protected QOpenGLFunctions
@@ -21,13 +22,15 @@ public:
 
 	OpenGlVideoSurface* surface;
 
-virtual bool isValid() const {
-	return (wasInitialized());
-}
-
-bool wasInitialized() const {
-	return (vertexArrayObject.isCreated());
-}
+//virtual bool isValid() const {
+//	return (wasInitialized());
+//}
+//
+//bool wasInitialized() const {
+//	return (vertexArrayObject.isCreated());
+//}
+	
+	void setOverlay(OverlayPainter& overlay);
 
 protected slots:
 	void setFrame(QVideoFrame& frame);
@@ -43,9 +46,10 @@ protected:
 	QOpenGLBuffer quadVertexBuffer, quadIndexBuffer;
 	QOpenGLShaderProgram program;
 	QOpenGLTexture* videoTexture;
+	OverlayPainter* overlay;
 
 	int localWidth, localHeight;
+	int width, height;
 	qreal devicePixelRatio;
-
 	int videoWidth, videoHeight;
 };

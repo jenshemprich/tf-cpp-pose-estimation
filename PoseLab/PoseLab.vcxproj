@@ -148,6 +148,9 @@
     <ClCompile Include="OpenCVVideoCaptureSource.cpp" />
     <ClCompile Include="OpenGlVideoSurface.cpp" />
     <ClCompile Include="OpenGlVideoView.cpp" />
+    <ClCompile Include="OverlayElement.cpp" />
+    <ClCompile Include="OverlayPainter.cpp" />
+    <ClCompile Include="OverlayText.cpp" />
     <ClCompile Include="PoseLab.cpp">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</OutputFile>
       <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">input</DynamicSource>
@@ -194,6 +197,15 @@
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir);.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtMultimediaWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions</IncludePath>
     </QtMoc>
     <ClInclude Include="OpenCVVideoBuffer.h" />
+    <QtMoc Include="OverlayElement.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir);.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtMultimediaWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir);.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtMultimediaWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions</IncludePath>
+    </QtMoc>
+    <ClInclude Include="OverlayPainter.h" />
+    <QtMoc Include="OverlayText.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir);.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtMultimediaWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir);.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMultimedia;$(QTDIR)\include\QtMultimediaWidgets;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtOpenGLExtensions</IncludePath>
+    </QtMoc>
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
