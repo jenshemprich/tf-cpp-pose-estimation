@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include "OverlayElement.h"
 
 class OverlayText : public OverlayElement
@@ -20,4 +22,5 @@ public:
 
 private:
 	QString text;
+	std::mutex data;
 };

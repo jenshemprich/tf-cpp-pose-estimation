@@ -2,6 +2,8 @@
 
 #include "OverlayText.h"
 
+using namespace std;
+
 OverlayText::OverlayText(Alignment alignment, QObject *parent)
 	: OverlayElement(alignment, parent)
 	, placeHolder()
@@ -16,11 +18,13 @@ OverlayText::~OverlayText() {
 }
 
 void OverlayText::setText(const QString& text) {
-	// TODO Synchronization issue causes crash - use signals to update text
+	lock_guard<mutex> lock(data);
 	this->text = text;
 }
 
 QSize OverlayText::size(QPainter& painter, const QRect& bounds) {
+	lock_guard<mutex> lock(data);
+
 	// TODO Code duplication
 	// TODO layout decisions distributed between overlay text and painter
 	QFont f = painter.font();
@@ -31,6 +35,8 @@ QSize OverlayText::size(QPainter& painter, const QRect& bounds) {
 }
 
 void OverlayText::paint(QPainter& painter, const QRect& bounds) {
+	lock_guard<mutex> lock(data);
+
 	QFont f = painter.font();
 	int fontHeight = bounds.height() - 22;
 	f.setPointSize(fontHeight);
