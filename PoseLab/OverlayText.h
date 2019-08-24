@@ -20,6 +20,8 @@ public:
 	virtual QSize size(QPainter& painter, const QRect& bounds) override;
 	virtual void paint(QPainter& painter, const QRect& bounds) override;
 
+	void chooseFont(QPainter& painter, const QRect& bounds);
+
 private:
 	QString text;
 	std::mutex data;

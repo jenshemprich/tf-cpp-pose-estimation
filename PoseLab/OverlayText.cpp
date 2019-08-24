@@ -22,24 +22,23 @@ void OverlayText::setText(const QString& text) {
 	this->text = text;
 }
 
+// TODO layout decisions distributed between overlay text and painter
+
 QSize OverlayText::size(QPainter& painter, const QRect& bounds) {
 	lock_guard<mutex> lock(data);
-
-	// TODO Code duplication
-	// TODO layout decisions distributed between overlay text and painter
-	QFont f = painter.font();
-	int fontHeight = (bounds.height() - 4) / 2;
-	f.setPointSize(fontHeight);
-	painter.setFont(f);
+	chooseFont(painter, bounds);
 	return QSize(painter.fontMetrics().horizontalAdvance(text), bounds.height());
 }
 
 void OverlayText::paint(QPainter& painter, const QRect& bounds) {
 	lock_guard<mutex> lock(data);
+	chooseFont(painter, bounds);
+	painter.drawText(QPoint(bounds.left(), bounds.top() + bounds.height() / 4 * 3), text);
+}
 
+void OverlayText::chooseFont(QPainter& painter, const QRect& bounds) {
 	QFont f = painter.font();
-	int fontHeight = bounds.height() - 22;
+	int fontHeight = (bounds.height() - 4) / 2;
 	f.setPointSize(fontHeight);
 	painter.setFont(f);
-	painter.drawText(QPoint(bounds.left(), bounds.top() + bounds.height() / 4 * 3), text);
 }
