@@ -1,7 +1,10 @@
 #include "pch.h"
 
+#include <vector>
+
 #include "OverlayPainter.h"
 
+using namespace std;
 
 OverlayPainter::OverlayPainter() : QPainter() {
 }
@@ -23,42 +26,54 @@ void OverlayPainter::paint() {
 	int height = window().height();
 	int glassHeight = 40;
 
+	vector<int> v;
+	v.push_back(overlayHeight(top, QRect(0, 0, width, glassHeight)));
+	v.push_back(overlayHeight(bottom, QRect(0, height - glassHeight, width, glassHeight)));
+	glassHeight = *std::min_element(std::begin(v), std::end(v));
+
 	// TODO Same size for all overlays -> compute all sizes first, use minimum
-	paint(top, QRect(0, 0, width, glassHeight), OverlayElement::Top);
-	paint(bottom, QRect(0, height - glassHeight, width, glassHeight), OverlayElement::Bottom);
+	paint(top, QRect(0, 0, width, glassHeight));
+	paint(bottom, QRect(0, height - glassHeight, width, glassHeight));
 }
 
-void OverlayPainter::paint(const std::vector<OverlayElement*>& elements, const QRect& region, OverlayElement::Alignment alignment) {
-	QColor smokeGlass(0, 0, 0, 192);
-	QBrush overlay(smokeGlass);
-
-	int x = 0, fill = 30;
-	int glassTop = region.top();
+int OverlayPainter::overlayHeight(const std::vector<OverlayElement*>& elements, const QRect& region) {
+	int x, fill = 30;
 	int glassHeight = region.height();
-	int fontSize = 18;
 
 	do {
 		x = 0;
-		QRect glass = QRect(region.left(), glassTop, region.width(), glassHeight);
+		QRect glass = QRect(region.left(), region.top(), region.width(), glassHeight);
 		for_each(elements.begin(), elements.end(), [&](OverlayElement* element) {
 			QSize size = element->size(*this, glass);
 			x += size.width() + fill;
 			});
 		x -= fill;
-		if (x < region.width()) {
-			fillRect(glass, overlay);
-			x = (region.width() - x) / 2;
-			for_each(elements.begin(), elements.end(), [&](OverlayElement* element) {
-				QSize size = element->size(*this, glass);
-				QRect rect(QPoint(x, glass.top()), size);
-				element->paint(*this, rect);
-				x += size.width() + fill;
-				});
-			break;
-		}
-		else {
+		if (x > region.width()) {
 			glassHeight /= 2;
-			glassTop += alignment == OverlayElement::Top ? 0 : glassHeight;
 		}
 	} while (x > region.width() && glassHeight >= 10);
+	return glassHeight;
+}
+
+void OverlayPainter::paint(const std::vector<OverlayElement*>& elements, const QRect& region) {
+	QColor smokeGlass(0, 0, 0, 192);
+	QBrush overlay(smokeGlass);
+
+	int x = 0, fill = 30;
+	int glassTop = region.top();
+
+	int widthOfElements = 0;
+	for_each(elements.begin(), elements.end(), [&](OverlayElement* element) {
+		QSize size = element->size(*this, region);
+		widthOfElements += size.width() + fill;
+	});
+
+	fillRect(region, overlay);
+	x = (region.width() - widthOfElements) / 2;
+	for_each(elements.begin(), elements.end(), [&](OverlayElement* element) {
+		QSize size = element->size(*this, region);
+		QRect rect(QRect(region.left() + x, region.top(), region.width(), region.height()));
+		element->paint(*this, rect);
+		x += size.width() + fill;
+	});
 }
