@@ -20,4 +20,6 @@ protected:
 	std::vector<OverlayElement*> top;
 	std::vector<OverlayElement*> bottom;
 
+	void paint(const std::vector<OverlayElement*>& elements, const QRect& region, OverlayElement::Alignment alignment);
+
 };

@@ -10,6 +10,7 @@
 #include <QToolButton>
 
 #include <PoseEstimation/PoseEstimator.h>
+#include <PoseEstimation/StopWatch.h>
 #include <PoseEstimation/TensorMat.h>
 
 #include "OverlayPainter.h"
@@ -54,6 +55,11 @@ protected:
 	AbstractVideoFrameSource* videoFrameSource;
 	QThread mediaThread;
 
+	QToolButton* newToolbarButton(QLayout * layout, QButtonGroup& group, const QString& text, const std::function<void()>& pressed);
+
+	// TODO Split up into model-view to reduce class complexity
+	// -> use slots & signals for data proapagation from inference/ui to overlay view
+
 	std::unique_ptr<PoseEstimator> pose_estimator;
 	TensorMat input;
 	QThread inferenceThread;
@@ -61,21 +67,23 @@ protected:
 	VideoFrameProcessor inference;
 	int inferencePxResizeFactor;
 	int inferenceUpscaleFactor;
+	int inferenceConvolutionSizeValue;
 	void px(int factor);
 	void u(int factor);
+	StopWatch fps;
 
 	OverlayPainter overlay;
 
 	OverlayText surfacePixels;
 	OverlayText inferencePixels;
 	OverlayText inferenceUpscale;
-	OverlayText convolutionSize;
+	OverlayText inferenceConvolutionSize;
 
 	OverlayText inferenceDuration;
 	OverlayText postProcessingDuration;
 	OverlayText humanPartsGenerationDuration;
 
-	QToolButton* newToolbarButton(QLayout * layout, QButtonGroup& group, const QString& text, const std::function<void()>& pressed);
+	OverlayText processingFPS;
 
 private:
 	Ui::PoseLabClass ui;

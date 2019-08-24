@@ -13,6 +13,7 @@
 #include <QSpinBox>
 #include <QList>
 
+#include <PoseEstimation/StopWatch.h>
 #include <PoseEstimation/CocoOpenCVRenderer.h>
 
 #include "CameraVideoFrameSource.h"
@@ -33,7 +34,11 @@ PoseLab::PoseLab(QWidget *parent)
 	, input(TensorMat::AutoResize, cv::Size(0, 0))
 	, inferenceThread()
 	, inference([this](QVideoFrame& frame) {
+		surfacePixels.setText(surfacePixels.placeHolder.arg(QString::number(frame.width()), QString::number(frame.height())));
 		input.resize(cv::Size(frame.width() / inferencePxResizeFactor, frame.height() / inferencePxResizeFactor));
+		inferencePixels.setText(surfacePixels.placeHolder.arg(QString::number(input.view.cols), QString::number(input.view.rows)));
+		inferenceUpscale.setText(inferenceUpscale.placeHolder.arg(inferenceUpscaleFactor));
+		inferenceConvolutionSize.setText(inferenceConvolutionSize.placeHolder.arg(inferenceConvolutionSizeValue));
 
 		// TODO convert directly to CV_32FC3 in TensorMat
 		Mat frameRef;
@@ -49,11 +54,17 @@ PoseLab::PoseLab(QWidget *parent)
 		}
 
 		input.copyFrom(image);
+		StopWatch stopWatch;
 		vector<coco::Human> humans = pose_estimator->inference(input.tensor, inferenceUpscaleFactor);
+		inferenceDuration.setText(inferenceDuration.placeHolder.arg(QString::number(stopWatch.get().count(), 'f', 0)));
+
 		coco::OpenCvRenderer(frameRef, 
 			AffineTransform::identity,
 			AffineTransform(Rect2f(0.0, 0.0, 1.0, 1.0), Rect(Point(0, 0), frameRef.size()))
 		).draw(humans);
+
+		processingFPS.setText(processingFPS.placeHolder.arg(QString::number(1000.0 / fps.get().count(),'f', 2)));
+		fps.reset();
 	})
 	, inferencePxResizeFactor(1)
 	, inferenceUpscaleFactor(4)
@@ -62,14 +73,15 @@ PoseLab::PoseLab(QWidget *parent)
 	, mediaThread()
 	, videoFrameSource(nullptr)
 
-	, surfacePixels(OverlayElement::Top, this)
-	, inferencePixels(OverlayElement::Top, this)
-	, inferenceUpscale(OverlayElement::Top, this)
-	, convolutionSize(OverlayElement::Top, this)
+	, surfacePixels("surface px=%1x%2", OverlayElement::Top, this)
+	, inferencePixels("inference px=%1x%2", OverlayElement::Top, this)
+	, inferenceUpscale("upscale=%1",OverlayElement::Top, this)
+	, inferenceConvolutionSize("conv2D size=%1",OverlayElement::Top, this)
 
-	, inferenceDuration(OverlayElement::Bottom, this)
+	, inferenceDuration("T-inf=%1ms", OverlayElement::Bottom, this)
 	, postProcessingDuration(OverlayElement::Bottom, this)
 	, humanPartsGenerationDuration(OverlayElement::Bottom, this)
+	, processingFPS("FPS_p=%1", OverlayElement::Bottom, this)
 {
 	ui.setupUi(this);
 	centralWidget()->setLayout(ui.mainLayout);
@@ -83,7 +95,7 @@ PoseLab::PoseLab(QWidget *parent)
 
 	// TODO select check button with default value (px1) - derive from tensor mat
 
-	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "1", [this]() {	px(1); });
+	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "1", [this]() {	px(1); })->click();
 	newToolbarButton(ui.pxValues, inferenceResolutionGroup, "2", [this]() {	px(2); });
 	// TODO coco parts are offset from gt - possibly px not dividable by 16
 	//newToolbarButton(ui.pxValues, inferenceResolutionGroup, "3", [this]() { px(3); });
@@ -96,7 +108,7 @@ PoseLab::PoseLab(QWidget *parent)
 	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "1", [this]() { u(1); });
 	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "2", [this]() { u(2); });
 	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "3", [this]() { u(3); });
-	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "4", [this]() { u(4); });
+	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "4", [this]() { u(4); })->click();
 	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "5", [this]() { u(5); });
 	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "6", [this]() { u(6); });
 	newToolbarButton(ui.uValues, inferenceUpscalenGroup, "7", [this]() { u(7); });
@@ -105,6 +117,7 @@ PoseLab::PoseLab(QWidget *parent)
 	// TODO select check button with default value (u4) - derive from field
 	
 	connect(ui.gaussKernelSize, qOverload<int>(&QSpinBox::valueChanged), this, &PoseLab::setGaussKernelSize);
+	ui.gaussKernelSize->setValue(15);
 
 	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
 	foreach(const QCameraInfo & cameraInfo, cameras) {
@@ -141,24 +154,17 @@ PoseLab::PoseLab(QWidget *parent)
 	overlay.add(surfacePixels);
 	overlay.add(inferencePixels);
 	overlay.add(inferenceUpscale);
-	overlay.add(convolutionSize);
+	overlay.add(inferenceConvolutionSize);
 
 	overlay.add(inferenceDuration);
-	overlay.add(postProcessingDuration);
-	overlay.add(humanPartsGenerationDuration);
+	// TODO
+	// overlay.add(postProcessingDuration);
+	// overlay.add(humanPartsGenerationDuration);
 
-	// TODO value update
-	surfacePixels.setText("surface px=640x352");
-	inferencePixels.setText("inference px=160x88");
 	// TODO model selection
 	// TODO result tensor
-	inferenceUpscale.setText("upscale=8");
-	convolutionSize.setText("conv2D size=25");
 
-	inferenceDuration.setText("T_inf=987ms");
-	postProcessingDuration.setText("T_post=632ms");
-	humanPartsGenerationDuration.setText("T_hum=768ms");
-	// TODO fps
+	overlay.add(processingFPS);
 
 	mediaThread.start();
 }
@@ -270,5 +276,6 @@ QToolButton* PoseLab::newToolbarButton(QLayout * layout, QButtonGroup& group, co
 }
 
 void PoseLab::setGaussKernelSize(int newSize) {
+	inferenceConvolutionSizeValue = newSize;
 	pose_estimator->setGaussKernelSize(newSize);
 }
