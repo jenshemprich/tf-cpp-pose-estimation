@@ -2,8 +2,6 @@
     <qresource prefix="/">
         <file>Resources/Shaders/identity_fragment_shader.glsl</file>
         <file>Resources/Shaders/identity_vertex_shader.glsl</file>
-        <file>Resources/ICON-icon.png</file>
-        <file>Resources/logo-ps.png</file>
         <file>Resources/Devices/camera_lens.png</file>
         <file>Resources/Devices/Microsoft Camera Front.png</file>
         <file>Resources/Devices/Microsoft Camera Rear.png</file>

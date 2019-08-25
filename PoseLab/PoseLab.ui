@@ -38,35 +38,6 @@
      <item>
       <layout class="QVBoxLayout" name="sourceBar">
        <item>
-        <widget class="QToolButton" name="showSettings">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="PoseLab.qrc">
-           <normaloff>:/Resources/ICON-icon.png</normaloff>:/Resources/ICON-icon.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>64</width>
-           <height>64</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacerSourcesTop">
          <property name="orientation">
           <enum>Qt::Vertical</enum>

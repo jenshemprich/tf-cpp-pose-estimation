@@ -145,11 +145,6 @@ PoseLab::PoseLab(QWidget *parent)
 
 	connect(ui.addSource, &QToolButton::pressed, this, &PoseLab::addSource);
 
-	// Workaround QLabel transparency gltch in QDarkStyle -> with alpha == 0 the color doesn't matter
-	// https://stackoverflow.com/questions/9952553/transpaprent-qlabel
-	// TODO report issue @ https://github.com/ColinDuquesnoy/QDarkStyleSheet
-	// ui.overlayTest->setStyleSheet("background-color: rgba(0,0,0,0%)");
-	
 	ui.video->setOverlay(overlay);
 	overlay.add(surfacePixels);
 	overlay.add(inferencePixels);
