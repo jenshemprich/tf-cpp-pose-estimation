@@ -21,14 +21,6 @@ public:
 	~OpenGlVideoView();
 
 	OpenGlVideoSurface* surface;
-
-//virtual bool isValid() const {
-//	return (wasInitialized());
-//}
-//
-//bool wasInitialized() const {
-//	return (vertexArrayObject.isCreated());
-//}
 	
 	void setOverlay(OverlayPainter& overlay);
 

@@ -182,7 +182,6 @@ PoseLab::~PoseLab() {
 
 	if (videoFrameSource != nullptr) {
 		videoFrameSource->end();
-		// TODO videoFrameSource->presentFrame is called once more after calling end() and stopping the timer -> resolve and delete object here
 	}
 
 	if (videoFrameSource != nullptr) {
@@ -221,20 +220,38 @@ void PoseLab::movieButtonPressed() {
 	show(path);
 }
 
+extern QImage qt_imageFromVideoFrame(const QVideoFrame& f);
+
 void PoseLab::addSource() {
 	QFileDialog dialog(this, tr("Open Video Source"), "../testdata/");
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setNameFilter(tr("Movie Files (*.mpg *.mkv *.3gp *.mp4 *.wmv *.webm)"));
 	if (dialog.exec()) {
 		QFileInfo source = dialog.selectedFiles()[0];
-		QIcon icon = QFileIconProvider().icon(source);
-		QPushButton* button = new QPushButton(icon, nullptr, nullptr);
-		button->setObjectName(source.absoluteFilePath());
-		button->setIconSize(QSize(64, 64));
-		button->setToolTip(source.baseName());
-		ui.movieButtons->addWidget(button);
-		connect(button, &QPushButton::pressed, this, &PoseLab::movieButtonPressed);
 		show(source.absoluteFilePath());
+
+		// Capture a frame later on to avoid black preview icons
+		QTimer* timer = new QTimer;
+		QObject::connect(timer, &QTimer::timeout, [this, source]() {
+			// https://stackoverflow.com/questions/14828678/disconnecting-lambda-functions-in-qt5
+			auto conn = std::make_shared<QMetaObject::Connection>();
+			*conn = connect(ui.video->surface, &OpenGlVideoSurface::frameArrived, this, [this, conn, source](const QVideoFrame& frame) mutable {
+				disconnect(*conn);
+				QImage image = qt_imageFromVideoFrame(frame);
+				QIcon icon(QPixmap::fromImage(image));
+				QPushButton* button = new QPushButton(icon, nullptr, nullptr);
+				button->setObjectName(source.absoluteFilePath());
+				button->setIconSize(QSize(64, 64));
+				button->setToolTip(source.baseName());
+				ui.movieButtons->addWidget(button);
+				connect(button, &QPushButton::pressed, this, &PoseLab::movieButtonPressed);
+				}, Qt::ConnectionType::BlockingQueuedConnection);
+			// TODO Resolve necessity to use BlockingConnection by making QVideoFrame& in signal declaration const
+			// https://stackoverflow.com/questions/17083379/qobjectconnect-cannot-queue-arguments-of-type-int
+		});
+		connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
+		timer->setSingleShot(true);
+		timer->start(2000);
 	}
 }
 
