@@ -1,8 +1,24 @@
+# PoseLab
+
+Load your favorite movie clip or camera feed and play with the inference parameters to optimize fps & quality. Use the source bar on the right to select a video stream and adjust the inference parameters with the buttons on the right.
+
+T<sub>inf</sub> shows the inference duration, FPS<sub>p</sub> the complete roundtrip time for each frame.
+
+![PoseLab](images/PoseLab.png "Poselab main window")
+
+The app has been developed with Qt 5 and OpenCV on Visual Studio. To build it, 
++ clone [this repository](https://github.com/jenshemprich/tf-cpp-pose-estimation)
++ grab the TensorFlow r1.10 binaries from [here](https://github.com/jenshemprich/lib/releases)
++ clone the [lib project](https://github.com/jenshemprich/lib/)
++ copy the tensorflow folder into the lib folder
++ download OpenCV 4.1.0 and drop it into the lib dir as well (you have to name it opencv-4.1.0)
++ install Qt 5.13.0 into the lib folder to lib/Qt/
++ Build with Visual Studio 2019
+
 # TensorFlow based Human Pose Estimation in C++
 This project demonstrates usage of the TensorFlow C++ interface for pose estimation.
 
 ![Freeriding](images/Freeriding_01_inference.jpg "Freeriding in the swiss alps")
-
 
 Inference, models and post-processing steps have been ported from Python to C++ from the [tf-pose-estimation](https://github.com/ildoonet/tf-pose-estimation/) project, which in turn has been inspired by [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose).
 
