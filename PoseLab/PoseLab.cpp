@@ -36,7 +36,7 @@ PoseLab::PoseLab(QWidget *parent)
 	, inference([this](QVideoFrame& frame) {
 		surfacePixels.setText(surfacePixels.placeHolder.arg(QString::number(frame.width()), QString::number(frame.height())));
 		input.resize(cv::Size(frame.width() / inferencePxResizeFactor, frame.height() / inferencePxResizeFactor));
-		inferencePixels.setText(surfacePixels.placeHolder.arg(QString::number(input.view.cols), QString::number(input.view.rows)));
+		inferencePixels.setText(inferencePixels.placeHolder.arg(QString::number(input.view.cols), QString::number(input.view.rows)));
 		inferenceUpscale.setText(inferenceUpscale.placeHolder.arg(inferenceUpscaleFactor));
 		inferenceConvolutionSize.setText(inferenceConvolutionSize.placeHolder.arg(inferenceConvolutionSizeValue));
 
@@ -74,7 +74,7 @@ PoseLab::PoseLab(QWidget *parent)
 	, videoFrameSource(nullptr)
 
 	, surfacePixels("surface px=%1x%2", OverlayElement::Top, this)
-	, inferencePixels("inference px=%1x%2", OverlayElement::Top, this)
+	, inferencePixels("input px=%1x%2", OverlayElement::Top, this)
 	, inferenceUpscale("upscale=%1",OverlayElement::Top, this)
 	, inferenceConvolutionSize("conv2D size=%1",OverlayElement::Top, this)
 
