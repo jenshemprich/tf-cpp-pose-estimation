@@ -85,6 +85,9 @@ PoseLab::PoseLab(QWidget *parent)
 {
 	ui.setupUi(this);
 	centralWidget()->setLayout(ui.mainLayout);
+	// Right toolbar controls limit vertical resize,
+	// TODO Make resize dpi aware and resize so that video is 16:9
+	resize(1280, 720);
 
 	pose_estimator->loadModel();
 	pose_estimator->setGaussKernelSize(25);

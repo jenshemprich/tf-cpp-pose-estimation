@@ -24,7 +24,7 @@ void OverlayPainter::add(OverlayElement& overlayElement) {
 void OverlayPainter::paint() {
 	const int width = window().width();
 	const int height = window().height();
-	const int desiredHeight = 40;
+	const int desiredHeight = 80;
 
 	vector<int> v;
 	v.push_back(overlayHeight(top, QRect(0, 0, width, desiredHeight)));
@@ -40,13 +40,13 @@ int OverlayPainter::overlayHeight(const std::vector<OverlayElement*>& elements, 
 	int glassHeight = region.height();
 
 	do {
-		x = 0;
+		x = fill;
 		QRect glass = QRect(region.left(), region.top(), region.width(), glassHeight);
 		for_each(elements.begin(), elements.end(), [&](OverlayElement* element) {
 			QSize size = element->size(*this, glass);
 			x += size.width() + fill;
 			});
-		x -= fill;
+//		x -= fill;
 		if (x > region.width()) {
 			glassHeight /= 2;
 		}

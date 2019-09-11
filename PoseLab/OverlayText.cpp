@@ -38,7 +38,7 @@ void OverlayText::paint(QPainter& painter, const QRect& bounds) {
 
 void OverlayText::chooseFont(QPainter& painter, const QRect& bounds) {
 	QFont f = painter.font();
-	int fontHeight = (bounds.height() - 4) / 2;
-	f.setPointSize(fontHeight);
+	int fontHeight = (bounds.height() - 8) / 1;
+	f.setPixelSize(fontHeight);
 	painter.setFont(f);
 }
